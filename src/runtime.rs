@@ -80,9 +80,9 @@ make_global! {
 ///
 /// This uses a runtime id to verify it's identity, this id is provided
 /// by the [`Counter`](Counter) trait, and ids may be reused via the [`PoolMut<C>`](PoolMut)
-pub struct Runtime<C = Global, R: PoolMut<C> = ()> {
+pub struct Runtime<C = Global, P: PoolMut<C> = ()> {
     id: C,
-    pool: R,
+    pool: P,
 }
 
 /// A handle to a [`Runtime`](Runtime) identifier
@@ -93,7 +93,7 @@ pub struct RuntimeHandle<C>(pub C);
 impl Runtime {
     /// Create a new runtime using [`Global`](Global) without reusing ids
     pub fn new() -> Self {
-        Self::with_counter_and_reuse(())
+        Self::with_counter_and_pool(())
     }
 }
 
@@ -103,7 +103,7 @@ impl<C: Counter> Runtime<C, ()> {
     /// note: Rust will likely have a hard time inferring which counter to use
     /// so you will likely have to qualify which type to use `Runtime::<MyCounter, _>::with_counter()`
     pub fn with_counter() -> Self {
-        Self::with_counter_and_reuse(())
+        Self::with_counter_and_pool(())
     }
 
     /// Try to create a new runtime using the selected `Counter` without reusing ids
@@ -114,18 +114,18 @@ impl<C: Counter> Runtime<C, ()> {
     /// note: Rust will likely have a hard time inferring which counter to use
     /// so you will likely have to qualify which type to use `Runtime::<MyCounter, _>::with_counter()`
     pub fn try_with_counter() -> Option<Self> {
-        Self::try_with_counter_and_reuse(())
+        Self::try_with_counter_and_pool(())
     }
 }
 
-impl<C: Counter, R: PoolMut<C>> Runtime<C, R> {
+impl<C: Counter, P: PoolMut<C>> Runtime<C, P> {
     /// Create a new runtime using the selected `Counter` reusing ids with `PoolMut`
     ///
     /// note: Rust will likely have a hard time inferring which counter to use
     /// so you will likely have to qualify which type to use
-    /// `Runtime::<MyCounter, _>::with_counter_and_reuse(pool)`
-    pub fn with_counter_and_reuse(pool: R) -> Self {
-        Self::try_with_counter_and_reuse(pool).expect("Could not allocate a new runtime id")
+    /// `Runtime::<MyCounter, _>::with_counter_and_pool(pool)`
+    pub fn with_counter_and_pool(pool: P) -> Self {
+        Self::try_with_counter_and_pool(pool).expect("Could not allocate a new runtime id")
     }
 
     /// Try to create a new runtime using the selected `Counter` reusing ids with `PoolMut`
@@ -136,9 +136,9 @@ impl<C: Counter, R: PoolMut<C>> Runtime<C, R> {
     ///
     /// note: Rust will likely have a hard time inferring which counter to use
     /// so you will likely have to qualify which type to use
-    /// `Runtime::<MyCounter, _>::with_counter_and_reuse(pool)`
-    pub fn try_with_counter_and_reuse(mut pool: R) -> Option<Self> {
-        let id = pool.take().or_else(C::try_next)?;
+    /// `Runtime::<MyCounter, _>::with_counter_and_pool(pool)`
+    pub fn try_with_counter_and_pool(mut pool: P) -> Option<Self> {
+        let id = pool.take_mut().or_else(C::try_next)?;
 
         Some(Runtime { id, pool })
     }
@@ -149,17 +149,17 @@ impl<C: Counter, R: PoolMut<C>> Runtime<C, R> {
     }
 
     /// The pool mechanism that this runtime identifier uses
-    pub fn pool(&self) -> &R {
+    pub fn pool(&self) -> &P {
         &self.pool
     }
 
     /// The pool mechanism that this runtime identifier uses
-    pub fn reuse_mut(&mut self) -> &mut R {
+    pub fn pool_mut(&mut self) -> &mut P {
         &mut self.pool
     }
 }
 
-unsafe impl<C: Counter, R: PoolMut<C>> crate::Identifier for Runtime<C, R> {
+unsafe impl<C: Counter, P: PoolMut<C>> crate::Identifier for Runtime<C, P> {
     type Handle = RuntimeHandle<C>;
 
     fn handle(&self) -> Self::Handle {
@@ -171,17 +171,17 @@ unsafe impl<C: Counter, R: PoolMut<C>> crate::Identifier for Runtime<C, R> {
     }
 }
 
-impl<C, R: PoolMut<C>> Drop for Runtime<C, R> {
+impl<C, P: PoolMut<C>> Drop for Runtime<C, P> {
     fn drop(&mut self) {
         // # Safety
         //
         // here `C: Counter` -> `C: Copy` (because we only construct such `C`)
-        let _ = self.pool.try_put(unsafe { core::ptr::read(&self.id) });
+        let _ = self.pool.try_put_mut(unsafe { core::ptr::read(&self.id) });
     }
 }
 
-impl<C: Counter, R: PoolMut<C>> Eq for Runtime<C, R> {}
-impl<C: Counter, R: PoolMut<C>> PartialEq for Runtime<C, R> {
+impl<C: Counter, P: PoolMut<C>> Eq for Runtime<C, P> {}
+impl<C: Counter, P: PoolMut<C>> PartialEq for Runtime<C, P> {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id
     }

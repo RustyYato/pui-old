@@ -23,7 +23,7 @@
 /// # use pui::runtime::Runtime;
 /// # pui::make_counter! { type MyCounter = [u8; 3]; }
 /// # let pool = ();
-/// let runtime_counter /* : Runtime<MyCounter, _> */ = MyCounter::with_reuse(pool);
+/// let runtime_counter /* : Runtime<MyCounter, _> */ = MyCounter::with_pool(pool);
 /// ```
 #[macro_export]
 macro_rules! make_counter {
@@ -48,14 +48,14 @@ macro_rules! make_counter {
             /// Create a new new `Runtime` with the given pool
             ///
             /// panic if the pool is empty and the counter is exhausted
-            pub fn with_reuse<P: $crate::runtime::PoolMut<Self>>(pool: P) -> $crate::runtime::Runtime<Self, P> {
-                $crate::runtime::Runtime::with_counter_and_reuse(pool)
+            pub fn with_pool<P: $crate::runtime::PoolMut<Self>>(pool: P) -> $crate::runtime::Runtime<Self, P> {
+                $crate::runtime::Runtime::with_counter_and_pool(pool)
             }
 
             /// Try to create a new new `Runtime` with the given pool
             /// return None if the pool is empty and the counter is exhausted
-            pub fn try_with_reuse<P: $crate::runtime::PoolMut<Self>>(pool: P) -> Option<$crate::runtime::Runtime<Self, P>> {
-                $crate::runtime::Runtime::try_with_counter_and_reuse(pool)
+            pub fn try_with_pool<P: $crate::runtime::PoolMut<Self>>(pool: P) -> Option<$crate::runtime::Runtime<Self, P>> {
+                $crate::runtime::Runtime::try_with_counter_and_pool(pool)
             }
         }
 
@@ -105,7 +105,7 @@ macro_rules! make_counter {
 /// # use pui::runtime::Runtime;
 /// # pui::make_counter_tl! { type MyCounter = [u8; 3]; }
 /// # let pool = ();
-/// let runtime_counter /* : Runtime<MyCounter, _> */ = MyCounter::with_reuse(pool);
+/// let runtime_counter /* : Runtime<MyCounter, _> */ = MyCounter::with_pool(pool);
 /// ```
 #[macro_export]
 #[cfg_attr(doc, doc(cfg(feature = "std")))]
@@ -131,14 +131,14 @@ macro_rules! make_counter_tl {
             /// Create a new new `Runtime` with the given pool
             ///
             /// panic if the pool is empty and the counter is exhausted
-            pub fn with_reuse<P: $crate::runtime::PoolMut<Self>>(pool: P) -> $crate::runtime::Runtime<Self, P> {
-                $crate::runtime::Runtime::with_counter_and_reuse(pool)
+            pub fn with_pool<P: $crate::runtime::PoolMut<Self>>(pool: P) -> $crate::runtime::Runtime<Self, P> {
+                $crate::runtime::Runtime::with_counter_and_pool(pool)
             }
 
             /// Try to create a new new `Runtime` with the given pool
             /// return None if the pool is empty and the counter is exhausted
-            pub fn try_with_reuse<P: $crate::runtime::PoolMut<Self>>(pool: P) -> Option<$crate::runtime::Runtime<Self, P>> {
-                $crate::runtime::Runtime::try_with_counter_and_reuse(pool)
+            pub fn try_with_pool<P: $crate::runtime::PoolMut<Self>>(pool: P) -> Option<$crate::runtime::Runtime<Self, P>> {
+                $crate::runtime::Runtime::try_with_counter_and_pool(pool)
             }
         }
 
@@ -172,6 +172,8 @@ macro_rules! make_counter_tl {
 #[macro_export]
 macro_rules! make_global_option_pool {
     ($(#[$meta:meta])* $v:vis one $name:ident($item:ty);) => {
+        $(#[$meta])*
+        #[derive(Clone, Copy)]
         $v struct $name;
 
         const _: () = {
@@ -199,9 +201,21 @@ macro_rules! make_global_option_pool {
                     }
                 }
             }
+
+            impl $crate::runtime::Pool<$item> for $name {
+                fn put(&self, value: $item) {
+                    $crate::runtime::PoolMut::put_mut(&mut $name, value)
+                }
+
+                fn take(&self) -> Option<$item> {
+                    $crate::runtime::PoolMut::take(&mut $name)
+                }
+            }
         };
     };
     ($(#[$meta:meta])* $v:vis thread_local one $name:ident($item:ty);) => {
+        $(#[$meta])*
+        #[derive(Clone, Copy)]
         $v struct $name;
 
         const _: () = {
@@ -218,6 +232,16 @@ macro_rules! make_global_option_pool {
 
                 fn take(&mut self) -> Option<$item> {
                     make_global_SINGLE_REUSE_ITEM.with(|c| c.take())
+                }
+            }
+
+            impl $crate::runtime::Pool<$item> for $name {
+                fn put(&self, value: $item) {
+                    $crate::runtime::PoolMut::put_mut(&mut $name, value)
+                }
+
+                fn take(&self) -> Option<$item> {
+                    $crate::runtime::PoolMut::take(&mut $name)
                 }
             }
         };
@@ -253,6 +277,7 @@ macro_rules! make_global_pool {
 macro_rules! make_global_pool {
     ($(#[$meta:meta])* $v:vis stack $name:ident($item:ty);) => {
         $(#[$meta])*
+        #[derive(Clone, Copy)]
         $v struct $name;
 
         const _: () = {
@@ -279,10 +304,21 @@ macro_rules! make_global_pool {
                     make_global_get_it().pop()
                 }
             }
+
+            impl $crate::runtime::Pool<$item> for $name {
+                fn put(&self, value: $item) {
+                    $crate::runtime::PoolMut::put_mut(&mut $name, value)
+                }
+
+                fn take(&self) -> Option<$item> {
+                    $crate::runtime::PoolMut::take(&mut $name)
+                }
+            }
         };
     };
     ($(#[$meta:meta])* $v:vis queue $name:ident($item:ty);) => {
         $(#[$meta])*
+        #[derive(Clone, Copy)]
         $v struct $name;
 
         const _: () = {
@@ -309,6 +345,16 @@ macro_rules! make_global_pool {
                     make_global_get_it().pop_front()
                 }
             }
+
+            impl $crate::runtime::Pool<$item> for $name {
+                fn put(&self, value: $item) {
+                    $crate::runtime::PoolMut::put_mut(&mut $name, value)
+                }
+
+                fn take(&self) -> Option<$item> {
+                    $crate::runtime::PoolMut::take(&mut $name)
+                }
+            }
         };
     };
     ($(#[$meta:meta])* $v:vis one $name:ident($item:ty);) => {
@@ -316,6 +362,7 @@ macro_rules! make_global_pool {
     };
     ($(#[$meta:meta])* $v:vis thread_local stack $name:ident($item:ty);) => {
         $(#[$meta])*
+        #[derive(Clone, Copy)]
         $v struct $name;
 
         const _: () = {
@@ -338,10 +385,21 @@ macro_rules! make_global_pool {
                     })
                 }
             }
+
+            impl $crate::runtime::Pool<$item> for $name {
+                fn put(&self, value: $item) {
+                    $crate::runtime::PoolMut::put_mut(&mut $name, value)
+                }
+
+                fn take(&self) -> Option<$item> {
+                    $crate::runtime::PoolMut::take(&mut $name)
+                }
+            }
         };
     };
     ($(#[$meta:meta])* $v:vis thread_local queue $name:ident($item:ty);) => {
         $(#[$meta])*
+        #[derive(Clone, Copy)]
         $v struct $name;
 
         const _: () = {
@@ -362,6 +420,16 @@ macro_rules! make_global_pool {
                     make_global_REUSE.with(|pool| unsafe {
                         (&mut *pool.get()).pop_front()
                     })
+                }
+            }
+
+            impl $crate::runtime::Pool<$item> for $name {
+                fn put(&self, value: $item) {
+                    $crate::runtime::PoolMut::put_mut(&mut $name, value)
+                }
+
+                fn take(&self) -> Option<$item> {
+                    $crate::runtime::PoolMut::take(&mut $name)
                 }
             }
         };
