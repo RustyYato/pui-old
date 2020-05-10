@@ -18,6 +18,16 @@ mod macros;
 mod pool;
 pub use pool::*;
 
+/// an opaque runtime id
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct RuntimeId<T>(T);
+
+impl<T> RuntimeId<T> {
+    fn into_inner(self) -> T {
+        self.0
+    }
+}
+
 /// A counter that allocates new ids
 ///
 /// # Safety
@@ -138,7 +148,10 @@ impl<C: Counter, P: PoolMut<C>> Runtime<C, P> {
     /// so you will likely have to qualify which type to use
     /// `Runtime::<MyCounter, _>::with_counter_and_pool(pool)`
     pub fn try_with_counter_and_pool(mut pool: P) -> Option<Self> {
-        let id = pool.take_mut().or_else(C::try_next)?;
+        let id = pool
+            .take_mut()
+            .map(RuntimeId::into_inner)
+            .or_else(C::try_next)?;
 
         Some(Runtime { id, pool })
     }
@@ -176,7 +189,9 @@ impl<C, P: PoolMut<C>> Drop for Runtime<C, P> {
         // # Safety
         //
         // here `C: Counter` -> `C: Copy` (because we only construct such `C`)
-        let _ = self.pool.try_put_mut(unsafe { core::ptr::read(&self.id) });
+        let _ = self
+            .pool
+            .try_put_mut(RuntimeId(unsafe { core::ptr::read(&self.id) }));
     }
 }
 
