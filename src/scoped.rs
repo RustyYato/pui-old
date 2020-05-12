@@ -21,7 +21,16 @@
 //!     let _foo_handle = foo.handle();
 //! }
 //! ```
-
+//! Note: you cannot intermix different scoped identifiers declared in the same scope
+//!
+//! ```compile_fail
+//! fn fail() {
+//!     pui::make_scoped!(foo);
+//!     pui::make_scoped!(bar);
+//!     assert_eq!(foo, bar);
+//! }
+//! ```
+//!
 use core::marker::PhantomData;
 
 /// Create a new scoped identifier with the provided name
