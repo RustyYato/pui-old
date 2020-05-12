@@ -8,8 +8,8 @@ fn smoke() {
         type TinyCounter = u8;
     }
 
-    let a = TinyCounter::new_runtime();
-    let b = TinyCounter::new_runtime();
+    let a = TinyCounter::new();
+    let b = TinyCounter::new();
 
     assert_ne!(a, b);
 
@@ -29,10 +29,10 @@ fn exhaust_u8() {
     let mut handles = Vec::new();
 
     for _ in 0..255 {
-        handles.push(TinyCounter::new_runtime().handle())
+        handles.push(TinyCounter::new().handle())
     }
 
-    assert!(TinyCounter::try_new_runtime().is_none());
+    assert!(TinyCounter::try_new().is_none());
 
     for (ai, a) in handles.iter().enumerate() {
         for (bi, b) in handles.iter().enumerate() {

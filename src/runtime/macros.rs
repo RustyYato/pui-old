@@ -16,7 +16,7 @@
 /// ```
 /// # use pui::runtime::Runtime;
 /// # pui::make_counter! { type MyCounter = [u8; 3]; }
-/// let runtime_counter /* : Runtime<MyCounter> */ = MyCounter::new_runtime();
+/// let runtime_counter /* : Runtime<MyCounter> */ = MyCounter::new();
 /// ```
 /// or if you want to plug in a custom [`PoolMut<_>`](runtime::PoolMut),
 /// ```
@@ -36,12 +36,12 @@ macro_rules! make_counter {
             /// Create a new new `Runtime`
             ///
             /// panic if the counter is exhausted
-            pub fn new_runtime() -> $crate::runtime::Runtime<Self> {
+            pub fn new() -> $crate::runtime::Runtime<Self> {
                 $crate::runtime::Runtime::with_counter()
             }
 
             /// Tryr to create a new new `Runtime`, return `None` if this counter is exhausted
-            pub fn try_new_runtime() -> Option<$crate::runtime::Runtime<Self>> {
+            pub fn try_new() -> Option<$crate::runtime::Runtime<Self>> {
                 $crate::runtime::Runtime::try_with_counter()
             }
 
@@ -98,7 +98,7 @@ macro_rules! make_counter {
 /// ```
 /// # use pui::runtime::Runtime;
 /// # pui::make_counter_tl! { type MyCounter = [u8; 3]; }
-/// let runtime_counter /* : Runtime<MyCounter> */ = MyCounter::new_runtime();
+/// let runtime_counter /* : Runtime<MyCounter> */ = MyCounter::new();
 /// ```
 /// or if you want to plug in a custom [`PoolMut<_>`](runtime::PoolMut),
 /// ```
@@ -119,12 +119,12 @@ macro_rules! make_counter_tl {
             /// Create a new new `Runtime`
             ///
             /// panic if the counter is exhausted
-            pub fn new_runtime() -> $crate::runtime::Runtime<Self> {
+            pub fn new() -> $crate::runtime::Runtime<Self> {
                 $crate::runtime::Runtime::with_counter()
             }
 
             /// Tryr to create a new new `Runtime`, return `None` if this counter is exhausted
-            pub fn try_new_runtime() -> Option<$crate::runtime::Runtime<Self>> {
+            pub fn try_new() -> Option<$crate::runtime::Runtime<Self>> {
                 $crate::runtime::Runtime::try_with_counter()
             }
 
@@ -219,7 +219,9 @@ macro_rules! make_global_option_pool {
     ($(#[$meta:meta])* $v:vis thread_local one $name:ident($item:ty);) => {
         $(#[$meta])*
         #[derive(Clone, Copy)]
-        $v struct $name;
+        $v enum $name { $name($crate::macros::PhantomData<$crate::ThreadLocal>) }
+        #[allow(non_upper_case_globals)]
+        const $name: $name = $name::$name($crate::macros::PhantomData);
 
         const _: () = {
             $crate::macros::thread_local! {
@@ -397,7 +399,9 @@ macro_rules! make_global_pool {
     ($(#[$meta:meta])* $v:vis thread_local stack $name:ident($item:ty);) => {
         $(#[$meta])*
         #[derive(Clone, Copy)]
-        $v struct $name;
+        $v enum $name { $name($crate::macros::PhantomData<$crate::ThreadLocal>) }
+        #[allow(non_upper_case_globals)]
+        const $name: $name = $name::$name($crate::macros::PhantomData);
 
         const _: () = {
             $crate::macros::thread_local! {
@@ -435,7 +439,9 @@ macro_rules! make_global_pool {
     ($(#[$meta:meta])* $v:vis thread_local queue $name:ident($item:ty);) => {
         $(#[$meta])*
         #[derive(Clone, Copy)]
-        $v struct $name;
+        $v enum $name { $name($crate::macros::PhantomData<$crate::ThreadLocal>) }
+        #[allow(non_upper_case_globals)]
+        const $name: $name = $name::$name($crate::macros::PhantomData);
 
         const _: () = {
             $crate::macros::thread_local! {

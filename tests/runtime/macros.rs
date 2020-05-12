@@ -28,16 +28,16 @@ make_global_pool! {
 fn no_pool() {
     let (a, b);
     {
-        let rt_a = Global::new_runtime();
-        let rt_b = Global::new_runtime();
+        let rt_a = Global::new();
+        let rt_b = Global::new();
         a = rt_a.handle();
         b = rt_b.handle();
         assert_ne!(rt_a.handle(), rt_b.handle());
     }
 
     {
-        let rt_a = Global::new_runtime();
-        let rt_b = Global::new_runtime();
+        let rt_a = Global::new();
+        let rt_b = Global::new();
         assert_ne!(rt_a.handle(), rt_b.handle());
         assert_ne!(rt_a.handle(), a);
         assert_ne!(rt_b.handle(), a);

@@ -1,0 +1,29 @@
+error[E0277]: `*mut ()` cannot be sent between threads safely
+  --> $DIR/runtime_thread_local 1.rs:10:5
+   |
+8  |     fn assert_send_sync<T: Send + Sync>(_: T) {}
+   |                            ---- required by this bound in `main::assert_send_sync`
+9  |     assert_send_sync(Global::new());
+10 |     assert_send_sync(Global::with_pool(Foo))
+   |     ^^^^^^^^^^^^^^^^ `*mut ()` cannot be sent between threads safely
+   |
+   = help: within `pui::runtime::Runtime<pui::runtime::Global, Foo>`, the trait `std::marker::Send` is not implemented for `*mut ()`
+   = note: required because it appears within the type `pui::ThreadLocal`
+   = note: required because it appears within the type `std::marker::PhantomData<pui::ThreadLocal>`
+   = note: required because it appears within the type `Foo`
+   = note: required because it appears within the type `pui::runtime::Runtime<pui::runtime::Global, Foo>`
+
+error[E0277]: `*mut ()` cannot be shared between threads safely
+  --> $DIR/runtime_thread_local 1.rs:10:5
+   |
+8  |     fn assert_send_sync<T: Send + Sync>(_: T) {}
+   |                                   ---- required by this bound in `main::assert_send_sync`
+9  |     assert_send_sync(Global::new());
+10 |     assert_send_sync(Global::with_pool(Foo))
+   |     ^^^^^^^^^^^^^^^^ `*mut ()` cannot be shared between threads safely
+   |
+   = help: within `pui::runtime::Runtime<pui::runtime::Global, Foo>`, the trait `std::marker::Sync` is not implemented for `*mut ()`
+   = note: required because it appears within the type `pui::ThreadLocal`
+   = note: required because it appears within the type `std::marker::PhantomData<pui::ThreadLocal>`
+   = note: required because it appears within the type `Foo`
+   = note: required because it appears within the type `pui::runtime::Runtime<pui::runtime::Global, Foo>`
