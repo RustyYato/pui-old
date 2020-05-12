@@ -1,0 +1,29 @@
+error[E0277]: `*mut ()` cannot be sent between threads safely
+ --> $DIR/thread_local.rs:7:5
+  |
+6 |     fn assert_send_sync<T: Send + Sync>(t: T) {}
+  |                            ---- required by this bound in `main::assert_send_sync`
+7 |     assert_send_sync(Id::new());
+  |     ^^^^^^^^^^^^^^^^ `*mut ()` cannot be sent between threads safely
+  |
+  = help: within `pui::typeid_tl::Type<Id>`, the trait `std::marker::Send` is not implemented for `*mut ()`
+  = note: required because it appears within the type `pui::ThreadLocal`
+  = note: required because it appears within the type `(pui::Invariant<Id>, pui::ThreadLocal)`
+  = note: required because it appears within the type `std::marker::PhantomData<(pui::Invariant<Id>, pui::ThreadLocal)>`
+  = note: required because it appears within the type `pui::typeid_tl::TypeHandle<Id>`
+  = note: required because it appears within the type `pui::typeid_tl::Type<Id>`
+
+error[E0277]: `*mut ()` cannot be shared between threads safely
+ --> $DIR/thread_local.rs:7:5
+  |
+6 |     fn assert_send_sync<T: Send + Sync>(t: T) {}
+  |                                   ---- required by this bound in `main::assert_send_sync`
+7 |     assert_send_sync(Id::new());
+  |     ^^^^^^^^^^^^^^^^ `*mut ()` cannot be shared between threads safely
+  |
+  = help: within `pui::typeid_tl::Type<Id>`, the trait `std::marker::Sync` is not implemented for `*mut ()`
+  = note: required because it appears within the type `pui::ThreadLocal`
+  = note: required because it appears within the type `(pui::Invariant<Id>, pui::ThreadLocal)`
+  = note: required because it appears within the type `std::marker::PhantomData<(pui::Invariant<Id>, pui::ThreadLocal)>`
+  = note: required because it appears within the type `pui::typeid_tl::TypeHandle<Id>`
+  = note: required because it appears within the type `pui::typeid_tl::Type<Id>`

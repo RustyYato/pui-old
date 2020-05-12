@@ -19,6 +19,8 @@ std = []
 alloc = []
 nightly = []
 
+test = []
+
 [dependencies]
 cfg-if = '0.1'
 

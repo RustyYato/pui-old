@@ -78,10 +78,12 @@ macro_rules! make_typeid {
 
 
         impl $ident {
-            unsafe fn __make_typeid_get_it() -> &$crate::macros::OnceFlag {
+            unsafe fn __make_typeid_get_it() -> &'static $crate::macros::OnceFlag {
                 #[allow(non_upper_case_globals)]
                 static make_typeid_FLAG: $crate::macros::OnceFlag =
                     $crate::macros::OnceFlag::new();
+
+                &make_typeid_FLAG
             }
 
             $crate::doc_item! {
@@ -105,7 +107,7 @@ macro_rules! make_typeid {
                 /// If an instance already exists, then return None
                 pub fn try_new() -> $crate::macros::Option<$crate::typeid::Type<Self>> {
                     unsafe {
-                        if __make_typeid_get_it().acquire() {
+                        if Self::__make_typeid_get_it().acquire() {
                             $crate::macros::Option::Some($crate::typeid::Type::new_unchecked(
                                 Self($crate::macros::MacroConstructed::new()),
                                 $crate::typeid::TypeHandle::new(),
@@ -121,7 +123,7 @@ macro_rules! make_typeid {
         impl $crate::macros::Drop for $ident {
             fn drop(&mut self) {
                 unsafe {
-                    __make_typeid_get_it().release()
+                    Self::__make_typeid_get_it().release()
                 }
             }
         }

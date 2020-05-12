@@ -39,6 +39,10 @@ pub mod typeid;
 #[cfg_attr(doc, doc(cfg(feature = "std")))]
 pub mod typeid_tl;
 
+#[cfg(all(feature = "test", feature = "std"))]
+#[doc(hidden)]
+pub mod test_setup;
+
 pub use macros::Scalar;
 
 struct Invariant<T: ?Sized>(fn() -> *mut T);
