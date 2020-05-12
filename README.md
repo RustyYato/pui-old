@@ -80,3 +80,49 @@ impl<I: Identifier> Owner<I> {
     }
 }
 ```
+
+You can also use this for safe unchecked accesses
+
+```rust
+pub struct Slice<'a, T, I> {
+    data: &'a [T],
+    ident: I,
+}
+
+pub struct Idx<H> {
+    index: usize,
+    handle: H,
+}
+
+impl<'a, T, I: Identifier> Slice<'a, T, I> {
+    fn from_ref(data: &'a [T], ident: I) -> Self {
+        Self { data, ident }
+    }
+
+    pub fn get_indicies<'b>(&self) -> impl 'b + Iterator<Item = Idx<I::Handle>>
+    where
+        I::Handle: 'b,
+    {
+        (0..self.data.len())
+            .zip(std::iter::repeat(self.ident.handle()))
+            .map(move |(index, handle)| Idx { index, handle })
+    }
+
+    pub fn contains_index(&self, index: usize) -> Option<Idx<I::Handle>> {
+        if index < self.data.len() {
+            Some(Idx { index, handle: self.ident.handle() })
+        } else {
+            None
+        }
+    }
+}
+
+impl<'a, T, I: Identifier> std::ops::Index<Idx<I::Handle>> for Slice<'a, T, I> {
+    type Output = T;
+
+    fn index(&self, idx: Idx<I::Handle>) -> &Self::Output {
+        /// This is safe because 
+        unsafe { self.data.get_unchecked(idx.index) }
+    }
+}
+```
