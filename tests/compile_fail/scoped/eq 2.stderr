@@ -1,0 +1,14 @@
+error[E0597]: `inv` does not live long enough
+ --> $DIR/eq 2.rs:3:5
+  |
+3 |     pui::make_scoped!(b);
+  |     ^^^^^^^^^^^^^^^^^^^^^ borrowed value does not live long enough
+4 |     assert_eq!(a, b);
+5 | }
+  | -
+  | |
+  | `inv` dropped here while still borrowed
+  | borrow might be used here, when `_assert_unique_lifetime` is dropped and runs the `Drop` code for type `pui::scoped::AssertUniqueLifetime`
+  |
+  = note: values in a scope are dropped in the opposite order they are defined
+  = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)

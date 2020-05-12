@@ -175,16 +175,6 @@ impl<C: Counter, P: PoolMut<C>> Runtime<C, P> {
     pub fn handle(&self) -> RuntimeHandle<C> {
         RuntimeHandle(self.id)
     }
-
-    /// The pool mechanism that this runtime identifier uses
-    pub fn pool(&self) -> &P {
-        &self.pool
-    }
-
-    /// The pool mechanism that this runtime identifier uses
-    pub fn pool_mut(&mut self) -> &mut P {
-        &mut self.pool
-    }
 }
 
 unsafe impl<C: Counter, P: PoolMut<C>> crate::Identifier for Runtime<C, P> {
@@ -214,5 +204,12 @@ impl<C: Counter, P: PoolMut<C>> Eq for Runtime<C, P> {}
 impl<C: Counter, P: PoolMut<C>> PartialEq for Runtime<C, P> {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id
+    }
+}
+
+use core::fmt;
+impl<C: fmt::Debug, P: PoolMut<C>> fmt::Debug for Runtime<C, P> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Runtime({:?})", self.id)
     }
 }

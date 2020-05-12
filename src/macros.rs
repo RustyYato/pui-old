@@ -223,7 +223,6 @@ macro_rules! num {
                         (None, _) => true,
                         (_, None) => false,
                         (Some(next), Some(max)) => next >= max,
-
                     };
 
                     if is_out_of_bounds {
