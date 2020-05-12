@@ -249,7 +249,7 @@ macro_rules! make_global_option_pool {
 }
 
 #[macro_export]
-#[cfg(not(feature = "std"))]
+#[cfg(not(any(doc, feature = "std")))]
 macro_rules! make_global_pool {
     ($(#[$meta:meta])* $v:vis stack $name:ident($item:ty);) => {
         $crate::macros::compile_error!{"the `std` feature on `pui` msut be turned on to allow global stack pool"}
@@ -271,9 +271,31 @@ macro_rules! make_global_pool {
     };
 }
 
+/// Create a new type that implements [`Pool`](runtime::Pool) and [`PoolMut`](runtime::PoolMut)
+/// that can be used with [`Runtime`](runtime::Runtime)
 ///
+/// For example,
+///
+/// ```
+/// pui::make_global_pool! {
+///     pub stack MyPool(pui::runtime::Global);
+/// }
+/// ```
+///
+/// will generate a global pool that yields used ids in FILO order.
+///
+/// in place of `stack` you can also use,
+///
+/// * stack - FILO order
+/// * thread_local stack - FILO order, but stores ids in a thread local (this is best used with thread local ids)
+/// * queue - FIFO order
+/// * thread_local queue - FIFO order, but stores ids in a thread local (this is best used with thread local ids)
+/// * one - stores a single id, best used with a counter backed by `()`
+/// * thread_local one - stores a single id, best used with a thread_local id backed by `()`
+///
+/// in place of `pui::runtime::Global` you can use any type that implements `Counter`
 #[macro_export]
-#[cfg(feature = "std")]
+#[cfg(any(doc, feature = "std"))]
 macro_rules! make_global_pool {
     ($(#[$meta:meta])* $v:vis stack $name:ident($item:ty);) => {
         $(#[$meta])*

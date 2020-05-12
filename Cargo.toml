@@ -18,7 +18,6 @@ default = ['std']
 std = []
 alloc = []
 nightly = []
-# no_atomics = []
 
 [dependencies]
 cfg-if = '0.1'
