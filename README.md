@@ -1,5 +1,7 @@
 # pui
 
+[documentation](https://docs.rs/pui)
+
 A set of process unique identifiers that can be used to
 identifry types with minimal overhead within a single process
 
