@@ -98,6 +98,7 @@ make_global! {
     ///
     /// This can be used with [`Runtime`](super::runtime::Runtime) to easily
     /// create a new [`Runtime`](super::runtime::Runtime) [`Identifier`](super::Identifier)
+    #[derive(Debug, PartialOrd, Ord, Hash)]
 }
 
 /// A runtime checked identifier

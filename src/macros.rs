@@ -196,7 +196,13 @@ macro_rules! num {
             fn inc_local(value: Self::Local) -> Option<(Self::Local, Self)> {
                 let next = value.checked_add(1);
 
-                if next >= $max {
+                let is_out_of_bounds = match (next, $max) {
+                    (None, _) => true,
+                    (_, None) => false,
+                    (Some(next), Some(max)) => next >= max,
+                };
+
+                if is_out_of_bounds {
                     return None
                 }
 
@@ -213,7 +219,14 @@ macro_rules! num {
                 loop {
                     let next = value.checked_add(1);
 
-                    if next >= $max {
+                    let is_out_of_bounds = match (next, $max) {
+                        (None, _) => true,
+                        (_, None) => false,
+                        (Some(next), Some(max)) => next >= max,
+
+                    };
+
+                    if is_out_of_bounds {
                         break None
                     }
 
