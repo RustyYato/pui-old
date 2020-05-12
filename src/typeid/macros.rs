@@ -13,11 +13,11 @@
 /// struct OnceThreadLocal;
 ///
 /// impl OnceThreadLocal {
-///     pub fn new() -> pui::typeid_tl::Type<Self> {
+///     pub fn new() -> pui::typeid::Type<Self> {
 ///         Self::try_new().unwrap()
 ///     }
 ///
-///     pub fn try_new() -> Option<pui::typeid_tl::Type<Self>> {
+///     pub fn try_new() -> Option<pui::typeid::Type<Self>> {
 ///         // implementation details
 /// # todo!()
 ///     }
@@ -132,33 +132,12 @@ macro_rules! make_typeid {
 
 /// Create a new [`typeid::Type`](typeid::Type) that is guaranteed to be unique
 ///
-/// calling `make_typeid` like so,
 /// ```
 /// # use pui::{make_anon_typeid, Identifier};
 /// let typeid = make_anon_typeid!();
 /// assert!(typeid.owns(&typeid.handle()));
 /// ```
 ///
-/// will desugar to something like
-///
-/// ```
-/// struct OnceThreadLocal;
-///
-/// impl OnceThreadLocal {
-///     pub fn new() -> pui::typeid_tl::Type<Self> {
-///         Self::try_new().unwrap()
-///     }
-///
-///     pub fn try_new() -> Option<pui::typeid_tl::Type<Self>> {
-///         // implementation details
-/// # todo!()
-///     }
-/// }
-/// ```
-///
-/// You can use `OnceThreadLocal::new()` to create a new thread local
-/// identifier instance if you are sure there are no other instances
-/// active, otherwise use `OnceThreadLocal::try_new()`
 #[macro_export]
 macro_rules! make_anon_typeid {
     () => {

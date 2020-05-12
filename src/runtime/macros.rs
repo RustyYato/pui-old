@@ -260,6 +260,7 @@ macro_rules! make_global_option_pool {
     };
 }
 
+///
 #[macro_export]
 #[cfg(not(any(doc, feature = "std")))]
 macro_rules! make_global_pool {
@@ -289,6 +290,7 @@ macro_rules! make_global_pool {
 /// For example,
 ///
 /// ```
+/// # #[cfg(feature = "std")]
 /// pui::make_global_pool! {
 ///     pub stack MyPool(pui::runtime::Global);
 /// }

@@ -1,9 +1,9 @@
 error: the `std` feature on `pui` msut be turned on to allow thread local storage
- --> $DIR/thread_local.rs:3:1
+ --> $DIR/thread_local.rs:1:1
   |
-3 | / make_counter! {
-4 | |     threadlocal type _Runtime = u8;
-5 | | }
+1 | / pui::make_counter_tl! {
+2 | |     type _Runtime = u8;
+3 | | }
   | |_^
   |
   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)

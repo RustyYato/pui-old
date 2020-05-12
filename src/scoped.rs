@@ -31,6 +31,7 @@
 //! }
 //! ```
 //!
+
 use core::marker::PhantomData;
 
 /// Create a new scoped identifier with the provided name

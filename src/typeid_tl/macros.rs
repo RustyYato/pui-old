@@ -2,6 +2,7 @@
 ///
 /// calling `make_typeid_tl` like so,
 /// ```
+/// # #[cfg(feature = "std")]
 /// pui::make_typeid_tl! {
 ///     once type OnceThreadLocal;
 /// }
@@ -13,10 +14,12 @@
 /// struct OnceThreadLocal;
 ///
 /// impl OnceThreadLocal {
+/// # #[cfg(feature = "std")]
 ///     pub fn new() -> pui::typeid_tl::Type<Self> {
 ///         Self::try_new().unwrap()
 ///     }
 ///
+/// # #[cfg(feature = "std")]
 ///     pub fn try_new() -> Option<pui::typeid_tl::Type<Self>> {
 ///         // implementation details
 /// # todo!()

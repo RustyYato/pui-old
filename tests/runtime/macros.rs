@@ -1,17 +1,21 @@
 use pui::{make_global_pool, runtime::Global};
 
+#[cfg(feature = "std")]
 make_global_pool! {
     stack Stack(Global);
 }
 
+#[cfg(feature = "std")]
 make_global_pool! {
     thread_local stack StackTl(Global);
 }
 
+#[cfg(feature = "std")]
 make_global_pool! {
     queue Queue(Global);
 }
 
+#[cfg(feature = "std")]
 make_global_pool! {
     thread_local queue QueueTl(Global);
 }
@@ -20,6 +24,7 @@ make_global_pool! {
     one One(Global);
 }
 
+#[cfg(feature = "std")]
 make_global_pool! {
     thread_local one OneTl(Global);
 }
@@ -47,6 +52,7 @@ fn no_pool() {
 }
 
 #[test]
+#[cfg(feature = "std")]
 fn stack() {
     let (a, b);
     {
@@ -67,6 +73,7 @@ fn stack() {
 }
 
 #[test]
+#[cfg(feature = "std")]
 fn stack_tl() {
     let (a, b);
     {
@@ -87,6 +94,7 @@ fn stack_tl() {
 }
 
 #[test]
+#[cfg(feature = "std")]
 fn queue() {
     let (a, b);
     {
@@ -109,6 +117,7 @@ fn queue() {
 }
 
 #[test]
+#[cfg(feature = "std")]
 fn queue_tl() {
     let (a, b);
     {
@@ -152,6 +161,7 @@ fn one() {
 }
 
 #[test]
+#[cfg(feature = "std")]
 fn one_tl() {
     let (a, b);
     {
