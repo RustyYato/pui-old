@@ -72,8 +72,8 @@ macro_rules! make_scoped {
 /// This identifier is guaranteed to be zero-sized and 1 byte aligned
 ///
 /// see module docs for details
-#[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[repr(C)]
+#[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Scoped<'id>(ScopedHandle<'id>);
 
 /// A handle to to a [`Scoped`](Scoped) identifier
@@ -93,7 +93,7 @@ impl<'id> Scoped<'id> {
         // Because there is a higher rank lifetime bound, no other lifetimes will match the given `Scoped<'id>`
         // so `Scoped<'id>` is guaranteed to be unique at compile time.
 
-        callback(Self(ScopedHandle(PhantomData)))
+        callback(unsafe { Self::new_unchecked(ScopedHandle::new()) })
     }
 
     /// Create a new scoped identifier without checking if it is indeed unique
@@ -107,7 +107,7 @@ impl<'id> Scoped<'id> {
     /// get a handle with the same lifetime id
     #[inline]
     pub const fn handle(&self) -> ScopedHandle<'id> {
-        ScopedHandle(PhantomData)
+        ScopedHandle::new()
     }
 }
 

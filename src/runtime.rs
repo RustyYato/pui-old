@@ -26,14 +26,28 @@ impl<T> RuntimeId<T> {
     fn into_inner(self) -> T {
         self.0
     }
+
+    /// The underlying id
+    pub fn get(&self) -> &T {
+        // This is safe becuase the interface of `Pool*` demands that you must
+        // either store a `RuntimeId`, return it, or drop it.
+        //
+        // In particular, the underlying value is useless because you cannot
+        // convert it back to a `RuntimeId` outside of this module. This means
+        // that all `RuntimeId`s must contain a unique id, and so `Pool*::take`
+        // will return a unique id or `None`
+        &self.0
+    }
 }
 
 /// A counter that allocates new ids
 ///
 /// # Safety
 ///
-/// * These ids may *never* repeat
-/// * There must be no other way to create instances of `Counter`
+/// two equal ids may never exist together on the same thread
+///
+/// This implies that `Counter::*next()` may never repeat an id on the same thread,
+/// and if it can repeat itself on different threads then `Self: !Send + !Sync`.
 pub unsafe trait Counter: Copy + Eq {
     /// Get the next id, panics if there are no next ids
     fn next() -> Self;
