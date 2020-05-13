@@ -1,3 +1,5 @@
+#![cfg(feature = "atomic")]
+
 #[path = "runtime/macros.rs"]
 mod macros;
 

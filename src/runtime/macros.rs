@@ -4,6 +4,7 @@
 /// For example,
 ///
 /// ```
+/// # #[cfg(feature = "atomic")]
 /// pui::make_counter! {
 ///     pub type MyCounter = [u8; 3];
 /// }
@@ -15,14 +16,18 @@
 /// You can then use it like so,
 /// ```
 /// # use pui::runtime::Runtime;
+/// # #[cfg(feature = "atomic")]
 /// # pui::make_counter! { type MyCounter = [u8; 3]; }
+/// # #[cfg(feature = "atomic")]
 /// let runtime_counter /* : Runtime<MyCounter> */ = MyCounter::new();
 /// ```
 /// or if you want to plug in a custom [`PoolMut<_>`](runtime::PoolMut),
 /// ```
 /// # use pui::runtime::Runtime;
+/// # #[cfg(feature = "atomic")]
 /// # pui::make_counter! { type MyCounter = [u8; 3]; }
 /// # let pool = ();
+/// # #[cfg(feature = "atomic")]
 /// let runtime_counter /* : Runtime<MyCounter, _> */ = MyCounter::with_pool(pool);
 /// ```
 #[macro_export]

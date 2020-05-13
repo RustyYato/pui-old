@@ -1,3 +1,5 @@
+#![cfg(feature = "atomic")]
+
 use pui::typeid::{Type, TypeHandle};
 
 #[test]

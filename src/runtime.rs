@@ -7,6 +7,7 @@
 //!
 //! ```
 //! type BackingScalar = [u8; 3];
+//! # #[cfg(feature = "atomic")]
 //! pui::make_counter! {
 //!     pub type MyCustomIdAllocator = BackingScalar;
 //! }
@@ -56,45 +57,45 @@ pub unsafe trait Counter: Copy + Eq {
     fn try_next() -> Option<Self>;
 }
 
-macro_rules! make_global {
-    ($(#[$meta:meta])*) => {
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "nightly")] {
+cfg_if::cfg_if! {
+    if #[cfg(feature = "atomic")] {
+        macro_rules! make_global {
+            ($(#[$meta:meta])*) => {
                 cfg_if::cfg_if! {
-                    if #[cfg(target_has_atomic = "64")] {
-                        crate::make_counter! {
-                            $(#[$meta])*
-                            pub type Global = core::num::NonZeroU64;
-                        }
-                    } else if #[cfg(target_has_atomic = "32")]{
-                        crate::make_counter! {
-                            $(#[$meta])*
-                            pub type Global = core::num::NonZeroU32;
-                        }
-                    } else if #[cfg(target_has_atomic = "16")]{
-                        crate::make_counter! {
-                            $(#[$meta])*
-                            pub type Global = core::num::NonZeroU16;
+                    if #[cfg(feature = "nightly")] {
+                        cfg_if::cfg_if! {
+                            if #[cfg(target_has_atomic = "64")] {
+                                crate::make_counter! {
+                                    $(#[$meta])*
+                                    pub type Global = core::num::NonZeroU64;
+                                }
+                            } else if #[cfg(target_has_atomic = "32")]{
+                                crate::make_counter! {
+                                    $(#[$meta])*
+                                    pub type Global = core::num::NonZeroU32;
+                                }
+                            } else if #[cfg(target_has_atomic = "16")]{
+                                crate::make_counter! {
+                                    $(#[$meta])*
+                                    pub type Global = core::num::NonZeroU16;
+                                }
+                            } else {
+                                crate::make_counter! {
+                                    $(#[$meta])*
+                                    pub type Global = core::num::NonZeroU8;
+                                }
+                            }
                         }
                     } else {
                         crate::make_counter! {
                             $(#[$meta])*
-                            pub type Global = core::num::NonZeroU8;
+                            pub type Global = core::num::NonZeroU64;
                         }
                     }
                 }
-            } else {
-                crate::make_counter! {
-                    $(#[$meta])*
-                    pub type Global = core::num::NonZeroU64;
-                }
-            }
+            };
         }
-    };
-}
 
-cfg_if::cfg_if! {
-    if #[cfg(feature = "atomic")] {
         make_global! {
             /// A gobal allocator for runtime ids (not to be confused with a memory allocator)
             ///

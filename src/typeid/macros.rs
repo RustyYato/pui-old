@@ -2,6 +2,7 @@
 ///
 /// calling `make_typeid` like so,
 /// ```
+/// # #[cfg(feature = "atomic")]
 /// pui::make_typeid! {
 ///     once type OnceThreadLocal;
 /// }

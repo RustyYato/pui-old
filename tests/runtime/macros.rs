@@ -1,3 +1,5 @@
+#![cfg(feature = "atomic")]
+
 use pui::{make_global_pool, runtime::Global};
 
 #[cfg(feature = "std")]
