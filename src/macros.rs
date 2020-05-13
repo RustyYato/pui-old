@@ -139,6 +139,7 @@ pub unsafe trait Scalar: Private + Copy + Eq {
 }
 
 impl Private for () {}
+unsafe impl crate::Trivial for () {}
 unsafe impl Scalar for () {
     #[doc(hidden)]
     type Local = bool;

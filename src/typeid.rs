@@ -33,6 +33,8 @@ pub struct Type<T>(TypeHandle<T>, T);
 #[repr(C)]
 pub struct TypeHandle<T>(PhantomData<crate::Invariant<T>>);
 
+unsafe impl<T> crate::Trivial for TypeHandle<T> {}
+
 impl<T> Type<T> {
     /// Create a new `Type<T>` handle
     ///

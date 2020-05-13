@@ -140,6 +140,9 @@ pub unsafe trait Identifier: Eq {
     fn owns(&self, handle: &Self::Handle) -> bool;
 }
 
+/// A zero-sized, 1 byte aligned type that has no validity (language) invariants or safety (library) invariants
+pub unsafe trait Trivial {}
+
 unsafe impl<I: Identifier + ?Sized> Identifier for &mut I {
     type Handle = I::Handle;
 
