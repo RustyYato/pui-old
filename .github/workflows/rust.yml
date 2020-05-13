@@ -31,7 +31,10 @@ jobs:
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: nightly
+        target: thumbv7m-none-eabi
         override: true
+    - name: Build no_std target
+      run: cargo build --no-default-features --features test --target thumbv7m-none-eabi --verbose
     - name: Build
       run: cargo build --no-default-features --features test --verbose
     - name: Run tests
