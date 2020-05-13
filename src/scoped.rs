@@ -96,6 +96,7 @@ pub struct Scoped<'id>(ScopedHandle<'id>);
 pub struct ScopedHandle<'id>(PhantomData<crate::Invariant<&'id ()>>);
 
 impl<'id> Scoped<'id> {
+    #[inline]
     /// Use a callback to to create a scoped identifier
     pub fn with<R, F: FnOnce(Scoped<'_>) -> R>(callback: F) -> R {
         // # Safety for `Identifier`
@@ -145,6 +146,7 @@ unsafe impl<'id> crate::Identifier for Scoped<'id> {
         self.handle()
     }
 
+    #[inline]
     fn owns(&self, _: &Self::Handle) -> bool {
         true
     }

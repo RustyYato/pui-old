@@ -171,6 +171,7 @@ impl<C: Counter, P: PoolMut<C>> Runtime<C, P> {
         Some(Runtime { id, pool })
     }
 
+    #[inline]
     /// A handle that this runtime identifier owns
     pub fn handle(&self) -> RuntimeHandle<C> {
         RuntimeHandle(self.id)
@@ -180,16 +181,19 @@ impl<C: Counter, P: PoolMut<C>> Runtime<C, P> {
 unsafe impl<C: Counter, P: PoolMut<C>> crate::Identifier for Runtime<C, P> {
     type Handle = RuntimeHandle<C>;
 
+    #[inline]
     fn handle(&self) -> Self::Handle {
         self.handle()
     }
 
+    #[inline]
     fn owns(&self, handle: &Self::Handle) -> bool {
         self.id == handle.0
     }
 }
 
 impl<C, P: PoolMut<C>> Drop for Runtime<C, P> {
+    #[inline]
     fn drop(&mut self) {
         // # Safety
         //

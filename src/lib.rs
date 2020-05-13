@@ -143,10 +143,12 @@ pub unsafe trait Identifier: Eq {
 unsafe impl<I: Identifier + ?Sized> Identifier for &mut I {
     type Handle = I::Handle;
 
+    #[inline]
     fn handle(&self) -> Self::Handle {
         I::handle(self)
     }
 
+    #[inline]
     fn owns(&self, handle: &Self::Handle) -> bool {
         I::owns(self, handle)
     }
@@ -156,10 +158,12 @@ unsafe impl<I: Identifier + ?Sized> Identifier for &mut I {
 unsafe impl<I: Identifier + ?Sized> Identifier for std::boxed::Box<I> {
     type Handle = I::Handle;
 
+    #[inline]
     fn handle(&self) -> Self::Handle {
         I::handle(self)
     }
 
+    #[inline]
     fn owns(&self, handle: &Self::Handle) -> bool {
         I::owns(self, handle)
     }

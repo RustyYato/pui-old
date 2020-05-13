@@ -248,10 +248,12 @@ macro_rules! make_global_option_pool {
             }
 
             impl $crate::runtime::Pool<$item> for $name {
+                #[inline]
                 fn try_put(&self, value: $crate::runtime::RuntimeId<$item>) -> Result<(), $crate::runtime::RuntimeId<$item>> {
                     <Self as $crate::runtime::PoolMut<$item>>::try_put_mut(&mut $name, value)
                 }
 
+                #[inline]
                 fn take(&self) -> Option<$crate::runtime::RuntimeId<$item>> {
                     <Self as $crate::runtime::PoolMut<$item>>::take_mut(&mut $name)
                 }
@@ -343,10 +345,12 @@ macro_rules! make_global_pool {
             }
 
             impl $crate::runtime::Pool<$item> for $name {
+                #[inline]
                 fn try_put(&self, value: $crate::runtime::RuntimeId<$item>) -> Result<(), $crate::runtime::RuntimeId<$item>> {
                     <Self as $crate::runtime::PoolMut<$item>>::try_put_mut(&mut $name, value)
                 }
 
+                #[inline]
                 fn take(&self) -> Option<$crate::runtime::RuntimeId<$item>> {
                     <Self as $crate::runtime::PoolMut<$item>>::take_mut(&mut $name)
                 }
@@ -385,10 +389,12 @@ macro_rules! make_global_pool {
             }
 
             impl $crate::runtime::Pool<$item> for $name {
+                #[inline]
                 fn try_put(&self, value: $crate::runtime::RuntimeId<$item>) -> Result<(), $crate::runtime::RuntimeId<$item>> {
                     <Self as $crate::runtime::PoolMut<$item>>::try_put_mut(&mut $name, value)
                 }
 
+                #[inline]
                 fn take(&self) -> Option<$crate::runtime::RuntimeId<$item>> {
                     <Self as $crate::runtime::PoolMut<$item>>::take_mut(&mut $name)
                 }
@@ -428,10 +434,12 @@ macro_rules! make_global_pool {
             }
 
             impl $crate::runtime::Pool<$item> for $name {
+                #[inline]
                 fn try_put(&self, value: $crate::runtime::RuntimeId<$item>) -> Result<(), $crate::runtime::RuntimeId<$item>> {
                     <Self as $crate::runtime::PoolMut<$item>>::try_put_mut(&mut $name, value)
                 }
 
+                #[inline]
                 fn take(&self) -> Option<$crate::runtime::RuntimeId<$item>> {
                     <Self as $crate::runtime::PoolMut<$item>>::take_mut(&mut $name)
                 }
@@ -468,10 +476,12 @@ macro_rules! make_global_pool {
             }
 
             impl $crate::runtime::Pool<$item> for $name {
+                #[inline]
                 fn try_put(&self, value: $crate::runtime::RuntimeId<$item>) -> Result<(), $crate::runtime::RuntimeId<$item>> {
                     <Self as $crate::runtime::PoolMut<$item>>::try_put_mut(&mut $name, value)
                 }
 
+                #[inline]
                 fn take(&self) -> Option<$crate::runtime::RuntimeId<$item>> {
                     <Self as $crate::runtime::PoolMut<$item>>::take_mut(&mut $name)
                 }

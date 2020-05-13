@@ -19,50 +19,60 @@ pub trait Pool<T>: PoolMut<T> {
 }
 
 impl<P: ?Sized + Pool<T>, T> PoolMut<T> for &P {
+    #[inline]
     fn try_put_mut(&mut self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> {
         Pool::try_put_mut(self, value)
     }
 
+    #[inline]
     fn take_mut(&mut self) -> Option<RuntimeId<T>> {
         Pool::take_mut(self)
     }
 }
 
 impl<T> PoolMut<T> for () {
+    #[inline]
     fn try_put_mut(&mut self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> {
         Err(value)
     }
 
+    #[inline]
     fn take_mut(&mut self) -> Option<RuntimeId<T>> {
         None
     }
 }
 
 impl<T> Pool<T> for () {
+    #[inline]
     fn try_put(&self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> {
         Err(value)
     }
 
+    #[inline]
     fn take(&self) -> Option<RuntimeId<T>> {
         None
     }
 }
 
 impl<T, R: ?Sized + PoolMut<T>> PoolMut<T> for &mut R {
+    #[inline]
     fn try_put_mut(&mut self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> {
         R::try_put_mut(self, value)
     }
 
+    #[inline]
     fn take_mut(&mut self) -> Option<RuntimeId<T>> {
         R::take_mut(self)
     }
 }
 
 impl<T, R: ?Sized + Pool<T>> Pool<T> for &R {
+    #[inline]
     fn try_put(&self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> {
         R::try_put(self, value)
     }
 
+    #[inline]
     fn take(&self) -> Option<RuntimeId<T>> {
         R::take(self)
     }
@@ -73,20 +83,24 @@ use core::cell::{Cell, RefCell};
 use std::sync::Mutex;
 
 impl<T, U: PoolMut<T>> PoolMut<T> for Cell<U> {
+    #[inline]
     fn try_put_mut(&mut self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> {
         self.get_mut().try_put_mut(value)
     }
 
+    #[inline]
     fn take_mut(&mut self) -> Option<RuntimeId<T>> {
         self.get_mut().take_mut()
     }
 }
 
 impl<T, U: PoolMut<T>> PoolMut<T> for RefCell<U> {
+    #[inline]
     fn try_put_mut(&mut self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> {
         self.get_mut().try_put_mut(value)
     }
 
+    #[inline]
     fn take_mut(&mut self) -> Option<RuntimeId<T>> {
         self.get_mut().take_mut()
     }
@@ -124,6 +138,7 @@ impl<T, U: PoolMut<T>> Pool<T> for RefCell<U> {
 
 #[cfg(feature = "std")]
 impl<T, U: PoolMut<T>> PoolMut<T> for Mutex<U> {
+    #[inline]
     fn try_put_mut(&mut self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> {
         if let Ok(x) = self.get_mut() {
             x.try_put_mut(value)
@@ -132,13 +147,14 @@ impl<T, U: PoolMut<T>> PoolMut<T> for Mutex<U> {
         }
     }
 
+    #[inline]
     fn take_mut(&mut self) -> Option<RuntimeId<T>> {
         self.get_mut().ok()?.take_mut()
     }
 }
 
 #[cfg(feature = "std")]
-impl<T, U: Default + PoolMut<T>> Pool<T> for Mutex<U> {
+impl<T, U: PoolMut<T>> Pool<T> for Mutex<U> {
     fn try_put(&self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> {
         if let Ok(mut inner) = self.lock() {
             inner.try_put_mut(value)
@@ -157,11 +173,13 @@ use std::{collections::VecDeque, vec::Vec};
 
 #[cfg(any(feature = "std", feature = "alloc"))]
 impl<T> PoolMut<T> for Vec<RuntimeId<T>> {
+    #[inline]
     fn try_put_mut(&mut self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> {
         self.push(value);
         Ok(())
     }
 
+    #[inline]
     fn take_mut(&mut self) -> Option<RuntimeId<T>> {
         self.pop()
     }
@@ -169,17 +187,20 @@ impl<T> PoolMut<T> for Vec<RuntimeId<T>> {
 
 #[cfg(any(feature = "std", feature = "alloc"))]
 impl<T> PoolMut<T> for VecDeque<RuntimeId<T>> {
+    #[inline]
     fn try_put_mut(&mut self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> {
         self.push_back(value);
         Ok(())
     }
 
+    #[inline]
     fn take_mut(&mut self) -> Option<RuntimeId<T>> {
         self.pop_front()
     }
 }
 
 impl<T> PoolMut<T> for Option<RuntimeId<T>> {
+    #[inline]
     fn try_put_mut(&mut self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> {
         if self.is_none() {
             *self = Some(value);
@@ -189,6 +210,7 @@ impl<T> PoolMut<T> for Option<RuntimeId<T>> {
         }
     }
 
+    #[inline]
     fn take_mut(&mut self) -> Option<RuntimeId<T>> {
         self.take()
     }

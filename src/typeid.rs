@@ -43,6 +43,7 @@ impl<T> Type<T> {
     /// # Safety
     ///
     /// There must be no other instances of `Type<T>` in the current process
+    #[inline]
     pub const unsafe fn new_unchecked(value: T, handle: TypeHandle<T>) -> Self {
         [()][core::mem::size_of::<T>()];
         [()][core::mem::align_of::<T>().wrapping_sub(1)];
@@ -58,6 +59,7 @@ impl<T> Type<T> {
 
 impl<T> TypeHandle<T> {
     /// Create a new handle
+    #[inline]
     pub const fn new() -> Self {
         Self(PhantomData)
     }
@@ -71,6 +73,7 @@ unsafe impl<T> crate::Identifier for Type<T> {
         self.handle()
     }
 
+    #[inline]
     fn owns(&self, _: &Self::Handle) -> bool {
         true
     }
@@ -80,6 +83,7 @@ unsafe impl<T> crate::Identifier for Type<T> {
 
 impl<T> Copy for TypeHandle<T> {}
 impl<T> Clone for TypeHandle<T> {
+    #[inline]
     fn clone(&self) -> Self {
         *self
     }
@@ -99,46 +103,54 @@ impl<T> fmt::Debug for TypeHandle<T> {
 
 impl<T> Eq for Type<T> {}
 impl<T> PartialEq for Type<T> {
+    #[inline]
     fn eq(&self, _: &Self) -> bool {
         true
     }
 }
 
 impl<T> PartialOrd for Type<T> {
+    #[inline]
     fn partial_cmp(&self, _: &Self) -> Option<core::cmp::Ordering> {
         Some(core::cmp::Ordering::Equal)
     }
 }
 
 impl<T> Ord for Type<T> {
+    #[inline]
     fn cmp(&self, _: &Self) -> core::cmp::Ordering {
         core::cmp::Ordering::Equal
     }
 }
 
 impl<T> core::hash::Hash for Type<T> {
+    #[inline]
     fn hash<H: core::hash::Hasher>(&self, _: &mut H) {}
 }
 
 impl<T> Eq for TypeHandle<T> {}
 impl<T> PartialEq for TypeHandle<T> {
+    #[inline]
     fn eq(&self, _: &Self) -> bool {
         true
     }
 }
 
 impl<T> PartialOrd for TypeHandle<T> {
+    #[inline]
     fn partial_cmp(&self, _: &Self) -> Option<core::cmp::Ordering> {
         Some(core::cmp::Ordering::Equal)
     }
 }
 
 impl<T> Ord for TypeHandle<T> {
+    #[inline]
     fn cmp(&self, _: &Self) -> core::cmp::Ordering {
         core::cmp::Ordering::Equal
     }
 }
 
 impl<T> core::hash::Hash for TypeHandle<T> {
+    #[inline]
     fn hash<H: core::hash::Hasher>(&self, _: &mut H) {}
 }
