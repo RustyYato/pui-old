@@ -78,10 +78,10 @@ macro_rules! make_typeid {
 
 
         impl $ident {
-            unsafe fn __make_typeid_get_it() -> &'static $crate::macros::OnceFlag {
+            unsafe fn __make_typeid_get_it() -> &'static $crate::macros::ResettableOnceFlag {
                 #[allow(non_upper_case_globals)]
-                static make_typeid_FLAG: $crate::macros::OnceFlag =
-                    $crate::macros::OnceFlag::new();
+                static make_typeid_FLAG: $crate::macros::ResettableOnceFlag =
+                    $crate::macros::ResettableOnceFlag::new();
 
                 &make_typeid_FLAG
             }
@@ -94,11 +94,20 @@ macro_rules! make_typeid {
                 #[doc = $crate::macros::concat!("If an instance of `pui::typeid_tl::Type<", $crate::macros::stringify!($ident), ">` already exists")]
                 // then panic
                 pub fn new() -> $crate::typeid::Type<Self> {
-                    Self::try_new().expect($crate::macros::concat!(
-                        "Cannot not create multiple `Type<",
-                        $crate::macros::stringify!($ident),
-                        ">` at the same time"
-                    ))
+                    unsafe {
+                        if Self::__make_typeid_get_it().acquire() {
+                            $crate::typeid::Type::new_unchecked(
+                                Self($crate::macros::MacroConstructed::new()),
+                                $crate::typeid::TypeHandle::new(),
+                            )
+                        } else {
+                            panic!($crate::macros::concat!(
+                                "Cannot not create multiple `Type<",
+                                $crate::macros::stringify!($ident),
+                                ">` at the same time"
+                            ))
+                        }
+                    }
                 }
             }
 
@@ -107,7 +116,7 @@ macro_rules! make_typeid {
                 /// If an instance already exists, then return None
                 pub fn try_new() -> $crate::macros::Option<$crate::typeid::Type<Self>> {
                     unsafe {
-                        if Self::__make_typeid_get_it().acquire() {
+                        if Self::__make_typeid_get_it().try_acquire() {
                             $crate::macros::Option::Some($crate::typeid::Type::new_unchecked(
                                 Self($crate::macros::MacroConstructed::new()),
                                 $crate::typeid::TypeHandle::new(),

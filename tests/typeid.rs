@@ -41,7 +41,6 @@ fn thread_local() {
 }
 
 #[test]
-#[should_panic]
 #[cfg(feature = "std")]
 fn multi_threaded() {
     use pui::test_setup::ThreadGroup;
@@ -57,12 +56,14 @@ fn multi_threaded() {
     let thread_group = ThreadGroup::new(2);
 
     thread_group.spawn(move |_, wait| {
-        let _a = MyTypeId::new();
+        wait.wait();
+        assert!(MyTypeId::try_new().is_none());
         wait.wait();
     });
 
     thread_group.spawn(move |_, wait| {
         let _a = MyTypeId::new();
+        wait.wait();
         wait.wait();
     });
 }

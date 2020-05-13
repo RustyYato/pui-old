@@ -93,32 +93,50 @@ macro_rules! make_global {
     };
 }
 
-make_global! {
-    /// A gobal allocator for runtime ids (not to be confused with a memory allocator)
-    ///
-    /// This can be used with [`Runtime`](super::runtime::Runtime) to easily
-    /// create a new [`Runtime`](super::runtime::Runtime) [`Identifier`](super::Identifier)
-    #[derive(Debug, PartialOrd, Ord, Hash)]
-}
+cfg_if::cfg_if! {
+    if #[cfg(feature = "atomic")] {
+        make_global! {
+            /// A gobal allocator for runtime ids (not to be confused with a memory allocator)
+            ///
+            /// This can be used with [`Runtime`](super::runtime::Runtime) to easily
+            /// create a new [`Runtime`](super::runtime::Runtime) [`Identifier`](super::Identifier)
+            #[derive(Debug, PartialOrd, Ord, Hash)]
+        }
 
-/// A runtime checked identifier
-///
-/// This uses a runtime id to verify it's identity, this id is provided
-/// by the [`Counter`](Counter) trait, and ids may be reused via the [`PoolMut<C>`](PoolMut)
-pub struct Runtime<C = Global, P: PoolMut<C> = ()> {
-    id: C,
-    pool: P,
-}
+        /// A runtime checked identifier
+        ///
+        /// This uses a runtime id to verify it's identity, this id is provided
+        /// by the [`Counter`](Counter) trait, and ids may be reused via the [`PoolMut<C>`](PoolMut)
+        pub struct Runtime<C = Global, P: PoolMut<C> = ()> {
+            id: C,
+            pool: P,
+        }
 
-/// A handle to a [`Runtime`](Runtime) identifier
-#[repr(transparent)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct RuntimeHandle<C>(pub C);
+        /// A handle to a [`Runtime`](Runtime) identifier
+        #[repr(transparent)]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+        pub struct RuntimeHandle<C = Global>(pub C);
 
-impl Runtime {
-    /// Create a new runtime using [`Global`](Global) without reusing ids
-    pub fn new() -> Self {
-        Self::with_counter_and_pool(())
+        impl Runtime {
+            /// Create a new runtime using [`Global`](Global) without reusing ids
+            pub fn new() -> Self {
+                Self::with_counter_and_pool(())
+            }
+        }
+    } else {
+        /// A runtime checked identifier
+        ///
+        /// This uses a runtime id to verify it's identity, this id is provided
+        /// by the [`Counter`](Counter) trait, and ids may be reused via the [`PoolMut<C>`](PoolMut)
+        pub struct Runtime<C, P: PoolMut<C> = ()> {
+            id: C,
+            pool: P,
+        }
+
+        /// A handle to a [`Runtime`](Runtime) identifier
+        #[repr(transparent)]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+        pub struct RuntimeHandle<C>(pub C);
     }
 }
 

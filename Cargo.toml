@@ -15,9 +15,10 @@ license = "MIT"
 [features]
 
 default = ['std']
-std = []
+std = ['atomic']
 alloc = []
 nightly = []
+atomic = []
 
 test = []
 

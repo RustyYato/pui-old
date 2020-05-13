@@ -6,7 +6,7 @@ pub use core::option::Option;
 pub use core::{compile_error, concat, stringify};
 
 #[cfg(feature = "std")]
-pub use std::sync::{Mutex, MutexGuard, Once};
+pub use std::sync::{Condvar, Mutex, MutexGuard, Once};
 
 #[cfg(any(feature = "std", feature = "alloc"))]
 pub use std::{collections::VecDeque, vec::Vec};
@@ -18,6 +18,7 @@ pub use std::thread_local;
 pub use crate::thread_local;
 
 use core::num::*;
+#[cfg(feature = "atomic")]
 use core::sync::atomic::{Ordering::*, *};
 
 #[doc(hidden)]
@@ -31,8 +32,10 @@ macro_rules! thread_local {
     };
 }
 
+#[cfg(feature = "atomic")]
 pub struct OnceFlag(AtomicBool);
 
+#[cfg(feature = "atomic")]
 impl OnceFlag {
     pub const fn new() -> Self {
         Self(AtomicBool::new(true))
@@ -41,18 +44,97 @@ impl OnceFlag {
     pub fn take(&self) -> bool {
         self.0.compare_and_swap(true, false, Relaxed)
     }
+}
 
-    pub fn acquire(&self) -> bool {
-        self.0.compare_and_swap(true, false, Acquire)
-    }
+cfg_if::cfg_if! {
+    if #[cfg(feature = "std")] {
+        pub struct ResettableOnceFlag {
+            locked: AtomicBool,
+            once: Once,
+            mutex: UnsafeCell<MaybeUninit<Mutex<()>>>,
+            cv: UnsafeCell<MaybeUninit<Condvar>>,
+        }
 
-    pub fn release(&self) {
-        self.0.store(true, Release);
+        unsafe impl Send for ResettableOnceFlag {}
+        unsafe impl Sync for ResettableOnceFlag {}
+
+        impl ResettableOnceFlag {
+            pub const fn new() -> Self {
+                Self {
+                    locked: AtomicBool::new(false),
+                    once: Once::new(),
+                    mutex: UnsafeCell::new(MaybeUninit::uninit()),
+                    cv: UnsafeCell::new(MaybeUninit::uninit()),
+                }
+            }
+
+            fn init(&self) -> (&Mutex<()>, &Condvar) {
+                unsafe {
+                    let mutex = self.mutex.get().cast::<Mutex<()>>();
+                    let condvar = self.cv.get().cast::<Condvar>();
+
+                    self.once.call_once(|| {
+                        mutex.write(Mutex::new(()));
+                        condvar.write(Condvar::new());
+                    });
+
+                    (&*mutex, &*condvar)
+                }
+            }
+
+            pub fn acquire(&self) -> bool {
+                let locked = self.locked.swap(true, Acquire);
+
+                if locked {
+                    let (mutex, cv) = self.init();
+
+                    let mut guard = mutex.lock().unwrap();
+
+                    while self.locked.compare_and_swap(false, true, Acquire) {
+                        guard = cv.wait(guard).unwrap();
+                    }
+                }
+
+                true
+            }
+
+            pub fn try_acquire(&self) -> bool {
+                !self.locked.swap(true, Acquire)
+            }
+
+            pub fn release(&self) {
+                self.locked.store(false, Release);
+
+                self.init().1.notify_one();
+            }
+        }
+    } else if #[cfg(feature = "atomic")] {
+        pub struct ResettableOnceFlag(AtomicBool);
+
+        impl ResettableOnceFlag {
+            pub const fn new() -> Self {
+                Self(AtomicBool::new(true))
+            }
+
+            pub fn acquire(&self) -> bool {
+                self.0.compare_and_swap(true, false, Acquire)
+            }
+
+            pub fn try_acquire(&self) -> bool {
+                self.acquire()
+            }
+
+            pub fn release(&self) {
+                self.0.store(true, Release);
+            }
+        }
     }
 }
 
+#[cfg(feature = "atomic")]
 pub struct InitFlag(AtomicU8);
 
+#[cfg(feature = "atomic")]
 impl InitFlag {
     pub const fn new() -> Self {
         Self(AtomicU8::new(0))
@@ -125,16 +207,19 @@ pub unsafe trait Scalar: Private + Copy + Eq {
     #[doc(hidden)]
     type Local;
     #[doc(hidden)]
+    #[cfg(feature = "atomic")]
     type Atomic;
 
     #[doc(hidden)]
     const INIT_LOCAL: Self::Local;
     #[doc(hidden)]
+    #[cfg(feature = "atomic")]
     const INIT_ATOMIC: Self::Atomic;
 
     #[doc(hidden)]
     fn inc_local(_: Self::Local) -> Option<(Self::Local, Self)>;
     #[doc(hidden)]
+    #[cfg(feature = "atomic")]
     fn inc_atomic(_: &Self::Atomic) -> Option<Self>;
 }
 
@@ -144,10 +229,12 @@ unsafe impl Scalar for () {
     #[doc(hidden)]
     type Local = bool;
     #[doc(hidden)]
+    #[cfg(feature = "atomic")]
     type Atomic = AtomicBool;
 
     #[doc(hidden)]
     const INIT_LOCAL: Self::Local = true;
+    #[cfg(feature = "atomic")]
     #[doc(hidden)]
     const INIT_ATOMIC: Self::Atomic = AtomicBool::new(true);
 
@@ -161,6 +248,7 @@ unsafe impl Scalar for () {
     }
 
     #[doc(hidden)]
+    #[cfg(feature = "atomic")]
     fn inc_atomic(this: &Self::Atomic) -> Option<Self> {
         if this.compare_and_swap(true, false, Relaxed) {
             Some(())
@@ -187,10 +275,12 @@ macro_rules! num {
             #[doc(hidden)]
             type Local = $local;
             #[doc(hidden)]
+            #[cfg(feature = "atomic")]
             type Atomic = $atomic;
             #[doc(hidden)]
             const INIT_LOCAL: Self::Local = $min;
             #[doc(hidden)]
+            #[cfg(feature = "atomic")]
             const INIT_ATOMIC: Self::Atomic = <$atomic>::new($min);
 
             #[doc(hidden)]
@@ -214,6 +304,7 @@ macro_rules! num {
             }
 
             #[doc(hidden)]
+            #[cfg(feature = "atomic")]
             fn inc_atomic(atomic: &Self::Atomic) -> Option<Self> {
                 let mut value = atomic.load(Relaxed);
 
