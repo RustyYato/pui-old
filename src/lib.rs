@@ -114,13 +114,15 @@ pub struct ThreadLocal(*mut ());
 /// }
 /// ```
 ///
-/// # Implementation Details
-///
-/// * calling `Identifier::owns` with the same handle you got from `Identifier::handle` should return true
-///
 /// # Safety
 ///
-/// * This function must never panic, no matter what inputs are passed in
+/// * Calling `Self::owns` with any handle acquired from `Self::handle` must return true
+/// * `Self::Handle` cannot change it's equality function with respect to `Self::owns`
+///     * i.e. if two handles compare equal now, they will always compare equal
+///         if they are not mutated via an exclusive reference.
+/// * If two handles compare equal, then `Identifier::owns` must act the same for both of them
+///     * i.e. it must return false for both handles, or it must return true for both handles
+/// * The following function must never panic, no matter what inputs are passed in
 ///
 /// ```rust
 /// # use pui::Identifier;
