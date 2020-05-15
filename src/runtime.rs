@@ -197,6 +197,7 @@ impl<C: Counter, P: PoolMut<C>> Runtime<C, P> {
     }
 }
 
+unsafe impl<C: Counter> crate::Handle for RuntimeHandle<C> {}
 unsafe impl<C: Counter, P: PoolMut<C>> crate::Identifier for Runtime<C, P> {
     type Handle = RuntimeHandle<C>;
 

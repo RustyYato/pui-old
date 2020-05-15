@@ -116,24 +116,15 @@ pub struct ThreadLocal(*mut ());
 ///
 /// # Safety
 ///
-/// * Calling `Self::owns` with any handle acquired from `Self::handle` must return true
-/// * `Self::Handle` cannot change it's equality function with respect to `Self::owns`
-///     * i.e. if two handles compare equal now, they will always compare equal
-///         if they are not mutated via an exclusive reference.
+/// * `ident.owns(&handle)` must return true for any `handle` returned from `ident.handle()` regardless of when
+///     the handle was created.
 /// * If two handles compare equal, then `Identifier::owns` must act the same for both of them
 ///     * i.e. it must return false for both handles, or it must return true for both handles
-/// * The following function must never panic, no matter what inputs are passed in
-///
-/// ```rust
-/// # use pui::Identifier;
-/// fn check_identifier_invariant<I: Identifier>(a: I, b: I) {
-///     assert!(a != b);
-///     assert!(a.handle() != b.handle());
-/// }
-/// ```
+/// * Two instances of `Identifier` must *never* return true for the same handle if they can both exist on the
+///     same thread at the same time.
 pub unsafe trait Identifier: Eq {
     /// A handle which can be used to mark other types
-    type Handle: Clone + Eq;
+    type Handle: Handle;
 
     /// Create a handle that this identifier owns
     fn handle(&self) -> Self::Handle;
@@ -141,6 +132,15 @@ pub unsafe trait Identifier: Eq {
     /// Check the current identifier owns the given handle
     fn owns(&self, handle: &Self::Handle) -> bool;
 }
+
+/// A handle to an [`Identifier`](Identifier).
+///
+/// # Safety
+///
+/// It is a safety bug for `Self` to be modified in such a way that its equality, as determined by the `Eq` trait,
+/// changes when compared using `PartialEq::Eq` or when cloned via `Clone::clone`.
+/// This is normally only possible through `Cell`, `RefCell`, global state, I/O, or unsafe code.
+pub unsafe trait Handle: Clone + Eq {}
 
 /// A zero-sized, 1 byte aligned type that has no validity (language) invariants or safety (library) invariants
 pub unsafe trait Trivial {}

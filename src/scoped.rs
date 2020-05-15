@@ -140,6 +140,7 @@ impl Drop for AssertUniqueLifetime<'_> {
     fn drop(&mut self) {}
 }
 
+unsafe impl crate::Handle for ScopedHandle<'_> {}
 unsafe impl<'id> crate::Identifier for Scoped<'id> {
     type Handle = ScopedHandle<'id>;
 

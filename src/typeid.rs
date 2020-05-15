@@ -67,6 +67,7 @@ impl<T> TypeHandle<T> {
     }
 }
 
+unsafe impl<T> crate::Handle for TypeHandle<T> {}
 unsafe impl<T> crate::Identifier for Type<T> {
     type Handle = TypeHandle<T>;
 
