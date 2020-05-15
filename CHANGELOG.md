@@ -1,3 +1,8 @@
+# v 0.2.0
+
+* Adjusted docs for `trait Identifier`
+* Added `trait Handle` to better express the invariants
+
 # v 0.1.1
 
 * Added `trait Trivial` for marking handles which are trivial to construct, and have no validity or safety invariants
