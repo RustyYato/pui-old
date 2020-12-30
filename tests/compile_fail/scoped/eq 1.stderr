@@ -4,19 +4,7 @@ error[E0495]: cannot infer an appropriate lifetime for lifetime parameter `'id` 
 4 |     Scoped::with(|a| Scoped::with(|b| assert_eq!(a, b)))
   |                                       ^^^^^^^^^^^^^^^^
   |
-note: first, the lifetime cannot outlive the anonymous lifetime #2 defined on the body at 4:35...
- --> $DIR/eq 1.rs:4:35
-  |
-4 |     Scoped::with(|a| Scoped::with(|b| assert_eq!(a, b)))
-  |                                   ^^^^^^^^^^^^^^^^^^^^
-note: ...so that the expression is assignable
- --> $DIR/eq 1.rs:4:39
-  |
-4 |     Scoped::with(|a| Scoped::with(|b| assert_eq!(a, b)))
-  |                                       ^^^^^^^^^^^^^^^^
-  = note: expected  `pui::scoped::Scoped<'_>`
-             found  `pui::scoped::Scoped<'_>`
-note: but, the lifetime must be valid for the anonymous lifetime #2 defined on the body at 4:18...
+note: first, the lifetime cannot outlive the anonymous lifetime #1 defined on the body at 4:18...
  --> $DIR/eq 1.rs:4:18
   |
 4 |     Scoped::with(|a| Scoped::with(|b| assert_eq!(a, b)))
@@ -26,6 +14,18 @@ note: ...so that the types are compatible
   |
 4 |     Scoped::with(|a| Scoped::with(|b| assert_eq!(a, b)))
   |                                       ^^^^^^^^^^^^^^^^
-  = note: expected  `std::cmp::PartialEq<pui::scoped::Scoped<'_>>`
-             found  `std::cmp::PartialEq`
+  = note: expected `PartialEq<Scoped<'_>>`
+             found `PartialEq`
+note: but, the lifetime must be valid for the anonymous lifetime #1 defined on the body at 4:35...
+ --> $DIR/eq 1.rs:4:35
+  |
+4 |     Scoped::with(|a| Scoped::with(|b| assert_eq!(a, b)))
+  |                                   ^^^^^^^^^^^^^^^^^^^^
+note: ...so that the expression is assignable
+ --> $DIR/eq 1.rs:4:39
+  |
+4 |     Scoped::with(|a| Scoped::with(|b| assert_eq!(a, b)))
+  |                                       ^^^^^^^^^^^^^^^^
+  = note: expected `Scoped<'_>`
+             found `Scoped<'_>`
   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)

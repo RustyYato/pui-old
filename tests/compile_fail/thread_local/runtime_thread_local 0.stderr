@@ -2,26 +2,26 @@ error[E0277]: `*mut ()` cannot be sent between threads safely
  --> $DIR/runtime_thread_local 0.rs:7:5
   |
 6 |     fn assert_send_sync<T: Send + Sync>(_: T) {}
-  |                            ---- required by this bound in `main::assert_send_sync`
+  |                            ---- required by this bound in `assert_send_sync`
 7 |     assert_send_sync(Foo::new());
   |     ^^^^^^^^^^^^^^^^ `*mut ()` cannot be sent between threads safely
   |
-  = help: within `pui::runtime::Runtime<Foo>`, the trait `std::marker::Send` is not implemented for `*mut ()`
-  = note: required because it appears within the type `pui::ThreadLocal`
-  = note: required because it appears within the type `std::marker::PhantomData<pui::ThreadLocal>`
+  = help: within `Runtime<Foo>`, the trait `Send` is not implemented for `*mut ()`
+  = note: required because it appears within the type `ThreadLocal`
+  = note: required because it appears within the type `PhantomData<ThreadLocal>`
   = note: required because it appears within the type `Foo`
-  = note: required because it appears within the type `pui::runtime::Runtime<Foo>`
+  = note: required because it appears within the type `Runtime<Foo>`
 
 error[E0277]: `*mut ()` cannot be shared between threads safely
  --> $DIR/runtime_thread_local 0.rs:7:5
   |
 6 |     fn assert_send_sync<T: Send + Sync>(_: T) {}
-  |                                   ---- required by this bound in `main::assert_send_sync`
+  |                                   ---- required by this bound in `assert_send_sync`
 7 |     assert_send_sync(Foo::new());
   |     ^^^^^^^^^^^^^^^^ `*mut ()` cannot be shared between threads safely
   |
-  = help: within `pui::runtime::Runtime<Foo>`, the trait `std::marker::Sync` is not implemented for `*mut ()`
-  = note: required because it appears within the type `pui::ThreadLocal`
-  = note: required because it appears within the type `std::marker::PhantomData<pui::ThreadLocal>`
+  = help: within `Runtime<Foo>`, the trait `Sync` is not implemented for `*mut ()`
+  = note: required because it appears within the type `ThreadLocal`
+  = note: required because it appears within the type `PhantomData<ThreadLocal>`
   = note: required because it appears within the type `Foo`
-  = note: required because it appears within the type `pui::runtime::Runtime<Foo>`
+  = note: required because it appears within the type `Runtime<Foo>`
