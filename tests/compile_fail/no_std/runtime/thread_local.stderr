@@ -1,4 +1,4 @@
-error: the `std` feature on `pui` msut be turned on to allow thread local storage
+error: the `std` feature on `pui` must be turned on to allow thread local storage
  --> $DIR/thread_local.rs:1:1
   |
 1 | / pui::make_global_id_alloc_tl! {

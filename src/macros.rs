@@ -31,7 +31,23 @@ macro_rules! thread_local {
     ($(#[$meta:meta])* static $name:ident: $type:ty = $init:expr;) => {
         $(#[$meta])*
         static $name: $crate::macros::LocalKey<$type> = $crate::macros::LocalKey::new();
-        $crate::macros::compile_error! {"the `std` feature on `pui` msut be turned on to allow thread local storage"}
+        $crate::macros::compile_error! {"the `std` feature on `pui` must be turned on to allow thread local storage"}
+    };
+}
+
+#[doc(hidden)]
+#[macro_export]
+#[cfg(feature = "atomic")]
+macro_rules! if_atomic_feature {
+    ($($tokens:tt)*) => { $($tokens)* };
+}
+
+#[doc(hidden)]
+#[macro_export]
+#[cfg(not(feature = "atomic"))]
+macro_rules! if_atomic_feature {
+    ($($tokens:tt)*) => {
+        compile_error! { "the `atomic` feature on `pui` must be turned on to allow syncronized globals" }
     };
 }
 

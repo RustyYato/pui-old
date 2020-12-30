@@ -66,7 +66,6 @@ macro_rules! make_global_id_alloc {
                 $crate::runtime::Runtime::try_with_id_alloc_and_pool(&mut Self, pool)
             }
         }
-
         unsafe impl $crate::runtime::IdAlloc for $name {
             type Id = $id;
 
@@ -79,11 +78,13 @@ macro_rules! make_global_id_alloc {
             }
 
             fn try_alloc(&mut self) -> Option<$id> {
-                #[allow(non_upper_case_globals)]
-                static make_runtime_NEXT_ID: <$inner as $crate::macros::Scalar>::Atomic =
-                    <$inner as $crate::macros::Scalar>::INIT_ATOMIC;
+                $crate::if_atomic_feature! {
+                    #[allow(non_upper_case_globals)]
+                    static make_runtime_NEXT_ID: <$inner as $crate::macros::Scalar>::Atomic =
+                        <$inner as $crate::macros::Scalar>::INIT_ATOMIC;
 
-                <$inner as $crate::macros::Scalar>::inc_atomic(&make_runtime_NEXT_ID).map($id)
+                    <$inner as $crate::macros::Scalar>::inc_atomic(&make_runtime_NEXT_ID).map($id)
+                }
             }
         }
     };
@@ -288,19 +289,19 @@ macro_rules! make_global_option_pool {
 #[cfg(not(any(doc, feature = "std")))]
 macro_rules! make_global_pool {
     ($(#[$meta:meta])* $v:vis stack $name:ident($item:ty);) => {
-        $crate::macros::compile_error!{"the `std` feature on `pui` msut be turned on to allow global stack pool"}
+        $crate::macros::compile_error!{"the `std` feature on `pui` must be turned on to allow global stack pool"}
     };
     ($(#[$meta:meta])* $v:vis queue $name:ident($item:ty);) => {
-        $crate::macros::compile_error!{"the `std` feature on `pui` msut be turned on to allow global queue pool"}
+        $crate::macros::compile_error!{"the `std` feature on `pui` must be turned on to allow global queue pool"}
     };
     ($(#[$meta:meta])* $v:vis one $name:ident($item:ty);) => {
         $crate::make_global_option_pool!{$(#[$meta])* $v one $name($item);}
     };
     ($(#[$meta:meta])* $v:vis thread_local stack $name:ident($item:ty);) => {
-        $crate::macros::compile_error!{"the `std` feature on `pui` msut be turned on to allow thread local stack pool"}
+        $crate::macros::compile_error!{"the `std` feature on `pui` must be turned on to allow thread local stack pool"}
     };
     ($(#[$meta:meta])* $v:vis thread_local queue $name:ident($item:ty);) => {
-        $crate::macros::compile_error!{"the `std` feature on `pui` msut be turned on to allow thread local queue pool"}
+        $crate::macros::compile_error!{"the `std` feature on `pui` must be turned on to allow thread local queue pool"}
     };
     ($(#[$meta:meta])* $v:vis thread_local one $name:ident($item:ty);) => {
         $crate::make_global_option_pool!{$(#[$meta])* $v thread_local one $name($item);}
