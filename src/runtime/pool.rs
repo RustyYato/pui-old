@@ -20,62 +20,42 @@ pub trait Pool<T>: PoolMut<T> {
 
 impl<P: ?Sized + Pool<T>, T> PoolMut<T> for &P {
     #[inline]
-    fn try_put_mut(&mut self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> {
-        Pool::try_put_mut(self, value)
-    }
+    fn try_put_mut(&mut self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> { Pool::try_put_mut(self, value) }
 
     #[inline]
-    fn take_mut(&mut self) -> Option<RuntimeId<T>> {
-        Pool::take_mut(self)
-    }
+    fn take_mut(&mut self) -> Option<RuntimeId<T>> { Pool::take_mut(self) }
 }
 
 impl<T> PoolMut<T> for () {
     #[inline]
-    fn try_put_mut(&mut self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> {
-        Err(value)
-    }
+    fn try_put_mut(&mut self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> { Err(value) }
 
     #[inline]
-    fn take_mut(&mut self) -> Option<RuntimeId<T>> {
-        None
-    }
+    fn take_mut(&mut self) -> Option<RuntimeId<T>> { None }
 }
 
 impl<T> Pool<T> for () {
     #[inline]
-    fn try_put(&self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> {
-        Err(value)
-    }
+    fn try_put(&self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> { Err(value) }
 
     #[inline]
-    fn take(&self) -> Option<RuntimeId<T>> {
-        None
-    }
+    fn take(&self) -> Option<RuntimeId<T>> { None }
 }
 
 impl<T, R: ?Sized + PoolMut<T>> PoolMut<T> for &mut R {
     #[inline]
-    fn try_put_mut(&mut self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> {
-        R::try_put_mut(self, value)
-    }
+    fn try_put_mut(&mut self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> { R::try_put_mut(self, value) }
 
     #[inline]
-    fn take_mut(&mut self) -> Option<RuntimeId<T>> {
-        R::take_mut(self)
-    }
+    fn take_mut(&mut self) -> Option<RuntimeId<T>> { R::take_mut(self) }
 }
 
 impl<T, R: ?Sized + Pool<T>> Pool<T> for &R {
     #[inline]
-    fn try_put(&self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> {
-        R::try_put(self, value)
-    }
+    fn try_put(&self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> { R::try_put(self, value) }
 
     #[inline]
-    fn take(&self) -> Option<RuntimeId<T>> {
-        R::take(self)
-    }
+    fn take(&self) -> Option<RuntimeId<T>> { R::take(self) }
 }
 
 use core::cell::{Cell, RefCell};
@@ -84,26 +64,18 @@ use std::sync::Mutex;
 
 impl<T, U: PoolMut<T>> PoolMut<T> for Cell<U> {
     #[inline]
-    fn try_put_mut(&mut self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> {
-        self.get_mut().try_put_mut(value)
-    }
+    fn try_put_mut(&mut self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> { self.get_mut().try_put_mut(value) }
 
     #[inline]
-    fn take_mut(&mut self) -> Option<RuntimeId<T>> {
-        self.get_mut().take_mut()
-    }
+    fn take_mut(&mut self) -> Option<RuntimeId<T>> { self.get_mut().take_mut() }
 }
 
 impl<T, U: PoolMut<T>> PoolMut<T> for RefCell<U> {
     #[inline]
-    fn try_put_mut(&mut self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> {
-        self.get_mut().try_put_mut(value)
-    }
+    fn try_put_mut(&mut self, value: RuntimeId<T>) -> Result<(), RuntimeId<T>> { self.get_mut().try_put_mut(value) }
 
     #[inline]
-    fn take_mut(&mut self) -> Option<RuntimeId<T>> {
-        self.get_mut().take_mut()
-    }
+    fn take_mut(&mut self) -> Option<RuntimeId<T>> { self.get_mut().take_mut() }
 }
 
 impl<T, U: Default + PoolMut<T>> Pool<T> for Cell<U> {
@@ -131,9 +103,7 @@ impl<T, U: PoolMut<T>> Pool<T> for RefCell<U> {
         }
     }
 
-    fn take(&self) -> Option<RuntimeId<T>> {
-        self.try_borrow_mut().ok()?.take_mut()
-    }
+    fn take(&self) -> Option<RuntimeId<T>> { self.try_borrow_mut().ok()?.take_mut() }
 }
 
 #[cfg(feature = "std")]
@@ -148,9 +118,7 @@ impl<T, U: PoolMut<T>> PoolMut<T> for Mutex<U> {
     }
 
     #[inline]
-    fn take_mut(&mut self) -> Option<RuntimeId<T>> {
-        self.get_mut().ok()?.take_mut()
-    }
+    fn take_mut(&mut self) -> Option<RuntimeId<T>> { self.get_mut().ok()?.take_mut() }
 }
 
 #[cfg(feature = "std")]
@@ -163,9 +131,7 @@ impl<T, U: PoolMut<T>> Pool<T> for Mutex<U> {
         }
     }
 
-    fn take(&self) -> Option<RuntimeId<T>> {
-        self.lock().ok()?.take_mut()
-    }
+    fn take(&self) -> Option<RuntimeId<T>> { self.lock().ok()?.take_mut() }
 }
 
 #[cfg(any(feature = "std", feature = "alloc"))]
@@ -180,9 +146,7 @@ impl<T> PoolMut<T> for Vec<RuntimeId<T>> {
     }
 
     #[inline]
-    fn take_mut(&mut self) -> Option<RuntimeId<T>> {
-        self.pop()
-    }
+    fn take_mut(&mut self) -> Option<RuntimeId<T>> { self.pop() }
 }
 
 #[cfg(any(feature = "std", feature = "alloc"))]
@@ -194,9 +158,7 @@ impl<T> PoolMut<T> for VecDeque<RuntimeId<T>> {
     }
 
     #[inline]
-    fn take_mut(&mut self) -> Option<RuntimeId<T>> {
-        self.pop_front()
-    }
+    fn take_mut(&mut self) -> Option<RuntimeId<T>> { self.pop_front() }
 }
 
 impl<T> PoolMut<T> for Option<RuntimeId<T>> {
@@ -211,9 +173,7 @@ impl<T> PoolMut<T> for Option<RuntimeId<T>> {
     }
 
     #[inline]
-    fn take_mut(&mut self) -> Option<RuntimeId<T>> {
-        self.take()
-    }
+    fn take_mut(&mut self) -> Option<RuntimeId<T>> { self.take() }
 }
 
 impl<P: PoolMut<T>, T> PoolMut<T> for [P] {
@@ -222,16 +182,14 @@ impl<P: PoolMut<T>, T> PoolMut<T> for [P] {
             if let Err(val) = slot.try_put_mut(value) {
                 value = val;
             } else {
-                return Ok(());
+                return Ok(())
             }
         }
 
         Err(value)
     }
 
-    fn take_mut(&mut self) -> Option<RuntimeId<T>> {
-        self.iter_mut().map(PoolMut::take_mut).flatten().next()
-    }
+    fn take_mut(&mut self) -> Option<RuntimeId<T>> { self.iter_mut().map(PoolMut::take_mut).flatten().next() }
 }
 
 impl<P: Pool<T>, T> Pool<T> for [P] {
@@ -240,14 +198,12 @@ impl<P: Pool<T>, T> Pool<T> for [P] {
             if let Err(val) = slot.try_put(value) {
                 value = val;
             } else {
-                return Ok(());
+                return Ok(())
             }
         }
 
         Err(value)
     }
 
-    fn take(&self) -> Option<RuntimeId<T>> {
-        self.iter().map(Pool::take).flatten().next()
-    }
+    fn take(&self) -> Option<RuntimeId<T>> { self.iter().map(Pool::take).flatten().next() }
 }

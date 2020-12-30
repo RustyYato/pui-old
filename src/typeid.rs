@@ -12,8 +12,7 @@
 //! The [`make_anon_typeid`](make_anon_typeid) macro uses the later approach. It creates a new
 //! unique instance of `Type` every time it is called.
 
-use core::fmt;
-use core::marker::PhantomData;
+use core::{fmt, marker::PhantomData};
 
 mod macros;
 
@@ -54,17 +53,13 @@ impl<T> Type<T> {
 
     /// get a handle with the same type parameter
     #[inline]
-    pub const fn handle(&self) -> TypeHandle<T> {
-        TypeHandle(PhantomData)
-    }
+    pub const fn handle(&self) -> TypeHandle<T> { TypeHandle(PhantomData) }
 }
 
 impl<T> TypeHandle<T> {
     /// Create a new handle
     #[inline]
-    pub const fn new() -> Self {
-        Self(PhantomData)
-    }
+    pub const fn new() -> Self { Self(PhantomData) }
 }
 
 unsafe impl<T> crate::Handle for TypeHandle<T> {}
@@ -72,14 +67,10 @@ unsafe impl<T> crate::Identifier for Type<T> {
     type Handle = TypeHandle<T>;
 
     #[inline]
-    fn handle(&self) -> TypeHandle<T> {
-        self.handle()
-    }
+    fn handle(&self) -> TypeHandle<T> { self.handle() }
 
     #[inline]
-    fn owns(&self, _: &Self::Handle) -> bool {
-        true
-    }
+    fn owns(&self, _: &Self::Handle) -> bool { true }
 }
 
 // common traits
@@ -87,15 +78,11 @@ unsafe impl<T> crate::Identifier for Type<T> {
 impl<T> Copy for TypeHandle<T> {}
 impl<T> Clone for TypeHandle<T> {
     #[inline]
-    fn clone(&self) -> Self {
-        *self
-    }
+    fn clone(&self) -> Self { *self }
 }
 
 impl<T> fmt::Debug for Type<T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Type({})", core::any::type_name::<T>())
-    }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "Type({})", core::any::type_name::<T>()) }
 }
 
 impl<T> fmt::Debug for TypeHandle<T> {
@@ -107,23 +94,17 @@ impl<T> fmt::Debug for TypeHandle<T> {
 impl<T> Eq for Type<T> {}
 impl<T> PartialEq for Type<T> {
     #[inline]
-    fn eq(&self, _: &Self) -> bool {
-        true
-    }
+    fn eq(&self, _: &Self) -> bool { true }
 }
 
 impl<T> PartialOrd for Type<T> {
     #[inline]
-    fn partial_cmp(&self, _: &Self) -> Option<core::cmp::Ordering> {
-        Some(core::cmp::Ordering::Equal)
-    }
+    fn partial_cmp(&self, _: &Self) -> Option<core::cmp::Ordering> { Some(core::cmp::Ordering::Equal) }
 }
 
 impl<T> Ord for Type<T> {
     #[inline]
-    fn cmp(&self, _: &Self) -> core::cmp::Ordering {
-        core::cmp::Ordering::Equal
-    }
+    fn cmp(&self, _: &Self) -> core::cmp::Ordering { core::cmp::Ordering::Equal }
 }
 
 impl<T> core::hash::Hash for Type<T> {
@@ -134,23 +115,17 @@ impl<T> core::hash::Hash for Type<T> {
 impl<T> Eq for TypeHandle<T> {}
 impl<T> PartialEq for TypeHandle<T> {
     #[inline]
-    fn eq(&self, _: &Self) -> bool {
-        true
-    }
+    fn eq(&self, _: &Self) -> bool { true }
 }
 
 impl<T> PartialOrd for TypeHandle<T> {
     #[inline]
-    fn partial_cmp(&self, _: &Self) -> Option<core::cmp::Ordering> {
-        Some(core::cmp::Ordering::Equal)
-    }
+    fn partial_cmp(&self, _: &Self) -> Option<core::cmp::Ordering> { Some(core::cmp::Ordering::Equal) }
 }
 
 impl<T> Ord for TypeHandle<T> {
     #[inline]
-    fn cmp(&self, _: &Self) -> core::cmp::Ordering {
-        core::cmp::Ordering::Equal
-    }
+    fn cmp(&self, _: &Self) -> core::cmp::Ordering { core::cmp::Ordering::Equal }
 }
 
 impl<T> core::hash::Hash for TypeHandle<T> {

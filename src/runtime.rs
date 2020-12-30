@@ -24,9 +24,7 @@ pub use pool::*;
 pub struct RuntimeId<T>(T);
 
 impl<T> RuntimeId<T> {
-    fn into_inner(self) -> T {
-        self.0
-    }
+    fn into_inner(self) -> T { self.0 }
 
     /// The underlying id
     pub fn get(&self) -> &T {
@@ -146,9 +144,7 @@ impl<C: Counter> Runtime<C, ()> {
     ///
     /// note: Rust will likely have a hard time inferring which counter to use
     /// so you will likely have to qualify which type to use `Runtime::<MyCounter, _>::with_counter()`
-    pub fn with_counter() -> Self {
-        Self::with_counter_and_pool(())
-    }
+    pub fn with_counter() -> Self { Self::with_counter_and_pool(()) }
 
     /// Try to create a new runtime using the selected `Counter` without reusing ids
     ///
@@ -157,9 +153,7 @@ impl<C: Counter> Runtime<C, ()> {
     ///
     /// note: Rust will likely have a hard time inferring which counter to use
     /// so you will likely have to qualify which type to use `Runtime::<MyCounter, _>::with_counter()`
-    pub fn try_with_counter() -> Option<Self> {
-        Self::try_with_counter_and_pool(())
-    }
+    pub fn try_with_counter() -> Option<Self> { Self::try_with_counter_and_pool(()) }
 }
 
 impl<C: Counter, P: PoolMut<C>> Runtime<C, P> {
@@ -182,19 +176,14 @@ impl<C: Counter, P: PoolMut<C>> Runtime<C, P> {
     /// so you will likely have to qualify which type to use
     /// `Runtime::<MyCounter, _>::with_counter_and_pool(pool)`
     pub fn try_with_counter_and_pool(mut pool: P) -> Option<Self> {
-        let id = pool
-            .take_mut()
-            .map(RuntimeId::into_inner)
-            .or_else(C::try_next)?;
+        let id = pool.take_mut().map(RuntimeId::into_inner).or_else(C::try_next)?;
 
         Some(Runtime { id, pool })
     }
 
     #[inline]
     /// A handle that this runtime identifier owns
-    pub fn handle(&self) -> RuntimeHandle<C> {
-        RuntimeHandle(self.id)
-    }
+    pub fn handle(&self) -> RuntimeHandle<C> { RuntimeHandle(self.id) }
 }
 
 unsafe impl<C: Counter> crate::Handle for RuntimeHandle<C> {}
@@ -202,14 +191,10 @@ unsafe impl<C: Counter, P: PoolMut<C>> crate::Identifier for Runtime<C, P> {
     type Handle = RuntimeHandle<C>;
 
     #[inline]
-    fn handle(&self) -> Self::Handle {
-        self.handle()
-    }
+    fn handle(&self) -> Self::Handle { self.handle() }
 
     #[inline]
-    fn owns(&self, handle: &Self::Handle) -> bool {
-        self.id == handle.0
-    }
+    fn owns(&self, handle: &Self::Handle) -> bool { self.id == handle.0 }
 }
 
 impl<C, P: PoolMut<C>> Drop for Runtime<C, P> {
@@ -218,22 +203,16 @@ impl<C, P: PoolMut<C>> Drop for Runtime<C, P> {
         // # Safety
         //
         // here `C: Counter` -> `C: Copy` (because we only construct such `C`)
-        let _ = self
-            .pool
-            .try_put_mut(RuntimeId(unsafe { core::ptr::read(&self.id) }));
+        let _ = self.pool.try_put_mut(RuntimeId(unsafe { core::ptr::read(&self.id) }));
     }
 }
 
 impl<C: Counter, P: PoolMut<C>> Eq for Runtime<C, P> {}
 impl<C: Counter, P: PoolMut<C>> PartialEq for Runtime<C, P> {
-    fn eq(&self, other: &Self) -> bool {
-        self.id == other.id
-    }
+    fn eq(&self, other: &Self) -> bool { self.id == other.id }
 }
 
 use core::fmt;
 impl<C: fmt::Debug, P: PoolMut<C>> fmt::Debug for Runtime<C, P> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Runtime({:?})", self.id)
-    }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "Runtime({:?})", self.id) }
 }

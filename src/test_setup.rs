@@ -1,9 +1,11 @@
-use std::any::Any;
-use std::boxed::Box;
-use std::panic::{catch_unwind, resume_unwind, AssertUnwindSafe};
-use std::sync::{Arc, Barrier, Condvar, Mutex};
-use std::thread::{spawn, JoinHandle};
-use std::vec::Vec;
+use std::{
+    any::Any,
+    boxed::Box,
+    panic::{catch_unwind, resume_unwind, AssertUnwindSafe},
+    sync::{Arc, Barrier, Condvar, Mutex},
+    thread::{spawn, JoinHandle},
+    vec::Vec,
+};
 
 pub struct ThreadGroup(Arc<Packet>);
 
@@ -65,15 +67,11 @@ impl ThreadGroup {
 }
 
 impl WaitOnDrop {
-    pub fn wait(&self) {
-        self.0.waiter.wait();
-    }
+    pub fn wait(&self) { self.0.waiter.wait(); }
 }
 
 impl Drop for WaitOnDrop {
-    fn drop(&mut self) {
-        self.0.waiter.wait();
-    }
+    fn drop(&mut self) { self.0.waiter.wait(); }
 }
 
 impl Drop for ThreadGroup {
@@ -96,7 +94,7 @@ impl Drop for ThreadGroup {
             }
 
             if done == packet.size {
-                break;
+                break
             } else {
                 threads = packet.cv.wait(threads).unwrap();
             }

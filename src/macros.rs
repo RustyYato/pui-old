@@ -1,9 +1,12 @@
-pub use core::cell::{Cell, UnsafeCell};
-pub use core::marker::PhantomData;
-pub use core::mem::MaybeUninit;
-pub use core::ops::Drop;
-pub use core::option::Option;
-pub use core::{compile_error, concat, stringify};
+pub use core::{
+    cell::{Cell, UnsafeCell},
+    compile_error, concat,
+    marker::PhantomData,
+    mem::MaybeUninit,
+    ops::Drop,
+    option::Option,
+    stringify,
+};
 
 #[cfg(feature = "std")]
 pub use std::sync::{Condvar, Mutex, MutexGuard, Once};
@@ -37,13 +40,9 @@ pub struct OnceFlag(AtomicBool);
 
 #[cfg(feature = "atomic")]
 impl OnceFlag {
-    pub const fn new() -> Self {
-        Self(AtomicBool::new(true))
-    }
+    pub const fn new() -> Self { Self(AtomicBool::new(true)) }
 
-    pub fn take(&self) -> bool {
-        self.0.compare_and_swap(true, false, Relaxed)
-    }
+    pub fn take(&self) -> bool { self.0.compare_and_swap(true, false, Relaxed) }
 }
 
 cfg_if::cfg_if! {
@@ -136,45 +135,29 @@ pub struct InitFlag(AtomicU8);
 
 #[cfg(feature = "atomic")]
 impl InitFlag {
-    pub const fn new() -> Self {
-        Self(AtomicU8::new(0))
-    }
+    pub const fn new() -> Self { Self(AtomicU8::new(0)) }
 
-    pub fn start_init(&self) -> bool {
-        0b00 == self.0.compare_and_swap(0b00, 0b10, Acquire)
-    }
+    pub fn start_init(&self) -> bool { 0b00 == self.0.compare_and_swap(0b00, 0b10, Acquire) }
 
-    pub fn finish_init(&self) {
-        self.0.store(0b11, Release);
-    }
+    pub fn finish_init(&self) { self.0.store(0b11, Release); }
 
-    pub fn start_take(&self) -> bool {
-        0b11 == self.0.compare_and_swap(0b11, 0b01, Acquire)
-    }
+    pub fn start_take(&self) -> bool { 0b11 == self.0.compare_and_swap(0b11, 0b01, Acquire) }
 
-    pub fn finish_take(&self) {
-        self.0.store(0b00, Release);
-    }
+    pub fn finish_take(&self) { self.0.store(0b00, Release); }
 }
 
 pub struct LocalKey<T>(PhantomData<T>);
 
 impl<T> LocalKey<T> {
-    pub const fn new() -> Self {
-        LocalKey(PhantomData)
-    }
+    pub const fn new() -> Self { LocalKey(PhantomData) }
 
-    pub fn with<F: FnOnce(&T) -> R, R>(&self, _: F) -> R {
-        todo!()
-    }
+    pub fn with<F: FnOnce(&T) -> R, R>(&self, _: F) -> R { todo!() }
 }
 
 pub struct LocalOnceFlag(Cell<bool>);
 
 impl LocalOnceFlag {
-    pub const fn new() -> Self {
-        Self(Cell::new(true))
-    }
+    pub const fn new() -> Self { Self(Cell::new(true)) }
 
     pub fn take(&self) -> bool {
         let flag = self.0.get();
@@ -182,9 +165,7 @@ impl LocalOnceFlag {
         flag
     }
 
-    pub fn reset(&self) {
-        self.0.set(true);
-    }
+    pub fn reset(&self) { self.0.set(true); }
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -192,9 +173,7 @@ pub struct MacroConstructed(());
 
 impl MacroConstructed {
     /// This function should only be called from a macro defined in pui
-    pub const unsafe fn new() -> Self {
-        Self(())
-    }
+    pub const unsafe fn new() -> Self { Self(()) }
 }
 
 pub(crate) use private::Private;
@@ -337,9 +316,7 @@ macro_rules! num {
     };
 }
 
-fn cast(x: u8) -> i8 {
-    i8::from_ne_bytes([x])
-}
+fn cast(x: u8) -> i8 { i8::from_ne_bytes([x]) }
 
 num! {
     (u8, "8", AtomicU8)

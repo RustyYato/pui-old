@@ -113,23 +113,17 @@ impl<'id> Scoped<'id> {
     ///
     /// You shouldn't use this function directly, instead use [`make_scoped`](make_scoped)
     #[inline]
-    pub const unsafe fn new_unchecked(handle: ScopedHandle<'id>) -> Self {
-        Self(handle)
-    }
+    pub const unsafe fn new_unchecked(handle: ScopedHandle<'id>) -> Self { Self(handle) }
 
     /// get a handle with the same lifetime id
     #[inline]
-    pub const fn handle(&self) -> ScopedHandle<'id> {
-        ScopedHandle::new()
-    }
+    pub const fn handle(&self) -> ScopedHandle<'id> { ScopedHandle::new() }
 }
 
 impl<'id> ScopedHandle<'id> {
     /// Create a new handle
     #[inline]
-    pub const fn new() -> Self {
-        Self(PhantomData)
-    }
+    pub const fn new() -> Self { Self(PhantomData) }
 }
 
 #[doc(hidden)]
@@ -145,12 +139,8 @@ unsafe impl<'id> crate::Identifier for Scoped<'id> {
     type Handle = ScopedHandle<'id>;
 
     #[inline]
-    fn handle(&self) -> ScopedHandle<'id> {
-        self.handle()
-    }
+    fn handle(&self) -> ScopedHandle<'id> { self.handle() }
 
     #[inline]
-    fn owns(&self, _: &Self::Handle) -> bool {
-        true
-    }
+    fn owns(&self, _: &Self::Handle) -> bool { true }
 }

@@ -5,7 +5,7 @@
 #![cfg_attr(feature = "nightly", feature(cfg_target_has_atomic))]
 
 //! A set of process unique identifiers that can be used to
-//! identifry types with minimal overhead within a single process
+//! identify values with minimal overhead within a single process
 //!
 //! see the [`Identifier`](crate::Identifier) trait for details
 //!
@@ -140,7 +140,9 @@ pub unsafe trait Identifier: Eq {
 /// It is a safety bug for `Self` to be modified in such a way that its equality, as determined by the `Eq` trait,
 /// changes when compared using `PartialEq::Eq` or when cloned via `Clone::clone`.
 /// This is normally only possible through `Cell`, `RefCell`, global state, I/O, or unsafe code.
-pub unsafe trait Handle: Clone + Eq {}
+pub unsafe trait Handle: Clone + Eq {
+    // type Owner: Identifier<Handle = Self>;
+}
 
 /// A zero-sized, 1 byte aligned type that has no validity (language) invariants or safety (library) invariants
 pub unsafe trait Trivial {}
@@ -149,14 +151,10 @@ unsafe impl<I: Identifier + ?Sized> Identifier for &mut I {
     type Handle = I::Handle;
 
     #[inline]
-    fn handle(&self) -> Self::Handle {
-        I::handle(self)
-    }
+    fn handle(&self) -> Self::Handle { I::handle(self) }
 
     #[inline]
-    fn owns(&self, handle: &Self::Handle) -> bool {
-        I::owns(self, handle)
-    }
+    fn owns(&self, handle: &Self::Handle) -> bool { I::owns(self, handle) }
 }
 
 #[cfg(any(feature = "std", feature = "alloc"))]
@@ -164,12 +162,8 @@ unsafe impl<I: Identifier + ?Sized> Identifier for std::boxed::Box<I> {
     type Handle = I::Handle;
 
     #[inline]
-    fn handle(&self) -> Self::Handle {
-        I::handle(self)
-    }
+    fn handle(&self) -> Self::Handle { I::handle(self) }
 
     #[inline]
-    fn owns(&self, handle: &Self::Handle) -> bool {
-        I::owns(self, handle)
-    }
+    fn owns(&self, handle: &Self::Handle) -> bool { I::owns(self, handle) }
 }
