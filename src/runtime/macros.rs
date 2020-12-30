@@ -70,15 +70,15 @@ macro_rules! make_global_id_alloc {
         unsafe impl $crate::runtime::IdAlloc for $name {
             type Id = $id;
 
-            fn next(&mut self) -> $id {
-                <Self as $crate::runtime::IdAlloc>::try_next(self).expect($crate::macros::concat!(
+            fn alloc(&mut self) -> $id {
+                <Self as $crate::runtime::IdAlloc>::try_alloc(self).expect($crate::macros::concat!(
                     "Cannot overflow <",
                     $crate::macros::stringify!($name),
                     " as pui::runtime::IdAlloc>::next"
                 ))
             }
 
-            fn try_next(&mut self) -> Option<$id> {
+            fn try_alloc(&mut self) -> Option<$id> {
                 #[allow(non_upper_case_globals)]
                 static make_runtime_NEXT_ID: <$inner as $crate::macros::Scalar>::Atomic =
                     <$inner as $crate::macros::Scalar>::INIT_ATOMIC;
@@ -164,15 +164,15 @@ macro_rules! make_global_id_alloc_tl {
         unsafe impl $crate::runtime::IdAlloc for $name {
             type Id = $id;
 
-            fn next(&mut self) -> $id {
-                <Self as $crate::runtime::IdAlloc>::try_next(self).expect($crate::macros::concat!(
+            fn alloc(&mut self) -> $id {
+                <Self as $crate::runtime::IdAlloc>::try_alloc(self).expect($crate::macros::concat!(
                     "Cannot overflow <",
                     $crate::macros::stringify!($name),
                     " as pui::runtime::IdAlloc>::next"
                 ))
             }
 
-            fn try_next(&mut self) -> Option<$id> {
+            fn try_alloc(&mut self) -> Option<$id> {
                 $crate::macros::thread_local! {
                     #[allow(non_upper_case_globals)]
                     static make_runtime_NEXT_ID: $crate::macros::Cell<<$inner as $crate::macros::Scalar>::Local> =

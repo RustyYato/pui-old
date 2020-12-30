@@ -1,17 +1,3 @@
-warning: missing documentation for an associated type
-  --> $DIR/runtime.rs:52:5
-   |
-52 |     type Id: Copy + Eq;
-   |     ^^^^^^^^^^^^^^^^^^^
-   |
-note: the lint level is defined here
-  --> $DIR/lib.rs:2:9
-   |
-2  | #![warn(missing_docs)]
-   |         ^^^^^^^^^^^^
-
-warning: 1 warning emitted
-
 error[E0495]: cannot infer an appropriate lifetime for lifetime parameter `'id` due to conflicting requirements
  --> $DIR/eq 1.rs:4:39
   |

@@ -24,8 +24,6 @@ pub use pool::*;
 pub struct RuntimeId<T>(T);
 
 impl<T> RuntimeId<T> {
-    fn into_inner(self) -> T { self.0 }
-
     /// The underlying id
     pub fn get(&self) -> &T {
         // This is safe becuase the interface of `Pool*` demands that you must
@@ -53,10 +51,10 @@ pub unsafe trait IdAlloc {
     type Id: Copy + Eq;
 
     /// Get the next id, panics if there are no next ids
-    fn next(&mut self) -> Self::Id;
+    fn alloc(&mut self) -> Self::Id;
 
     /// Try to get the next id, returns `None` if there are no next ids
-    fn try_next(&mut self) -> Option<Self::Id>;
+    fn try_alloc(&mut self) -> Option<Self::Id>;
 }
 
 cfg_if::cfg_if! {
@@ -132,6 +130,14 @@ cfg_if::cfg_if! {
                 Self::with_id_alloc_and_pool(&mut Global, ())
             }
         }
+
+        impl<P: PoolMut<GlobalId>> Runtime<Global, P> {
+            /// Create a new runtime using [`Global`](Global), reusing ids from the
+            /// given pool
+            pub fn with_pool(pool: P) -> Self {
+                Self::with_id_alloc_and_pool(&mut Global, pool)
+            }
+        }
     } else {
         /// A runtime checked identifier
         ///
@@ -171,8 +177,13 @@ impl<I: IdAlloc, P: PoolMut<I::Id>> Runtime<I, P> {
     /// note: Rust will likely have a hard time inferring which id_alloc to use
     /// so you will likely have to qualify which type to use
     /// `Runtime::<MyIdAlloc, _>::with_id_alloc_and_pool(pool)`
-    pub fn with_id_alloc_and_pool(id_alloc: &mut I, pool: P) -> Self {
-        Self::try_with_id_alloc_and_pool(id_alloc, pool).expect("Could not allocate a new runtime id")
+    pub fn with_id_alloc_and_pool(id_alloc: &mut I, mut pool: P) -> Self {
+        let id = match pool.take_mut() {
+            Some(id_alloc) => id_alloc.0,
+            None => id_alloc.alloc(),
+        };
+
+        Runtime { id, pool }
     }
 
     /// Try to create a new runtime using the selected `IdAlloc` reusing ids with `PoolMut`
@@ -185,9 +196,9 @@ impl<I: IdAlloc, P: PoolMut<I::Id>> Runtime<I, P> {
     /// so you will likely have to qualify which type to use
     /// `Runtime::<MyIdAlloc, _>::with_id_alloc_and_pool(pool)`
     pub fn try_with_id_alloc_and_pool(id_alloc: &mut I, mut pool: P) -> Option<Self> {
-        let id = match pool.take_mut().map(RuntimeId::into_inner) {
-            Some(id_alloc) => id_alloc,
-            None => id_alloc.try_next()?,
+        let id = match pool.take_mut() {
+            Some(id_alloc) => id_alloc.0,
+            None => id_alloc.try_alloc()?,
         };
 
         Some(Runtime { id, pool })
@@ -198,7 +209,10 @@ impl<I: IdAlloc, P: PoolMut<I::Id>> Runtime<I, P> {
     pub fn handle(&self) -> RuntimeHandle<I> { RuntimeHandle(self.id) }
 }
 
-impl<I: IdAlloc> Trivial for RuntimeHandle<I> where I::Id: Trivial {
+impl<I: IdAlloc> Trivial for RuntimeHandle<I>
+where
+    I::Id: Trivial,
+{
     const INSTANCE: Self = Self(Trivial::INSTANCE);
 }
 
