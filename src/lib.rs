@@ -140,12 +140,13 @@ pub unsafe trait Identifier: Eq {
 /// It is a safety bug for `Self` to be modified in such a way that its equality, as determined by the `Eq` trait,
 /// changes when compared using `PartialEq::Eq` or when cloned via `Clone::clone`.
 /// This is normally only possible through `Cell`, `RefCell`, global state, I/O, or unsafe code.
-pub unsafe trait Handle: Clone + Eq {
-    // type Owner: Identifier<Handle = Self>;
-}
+pub unsafe trait Handle: Clone + Eq {}
 
-/// A zero-sized, 1 byte aligned type that has no validity (language) invariants or safety (library) invariants
-pub unsafe trait Trivial {}
+/// a type that has no validity (language) invariants or safety (library) invariants
+pub trait Trivial: Copy {
+    /// The canonical instance of `Self`
+    const INSTANCE: Self;
+}
 
 unsafe impl<I: Identifier + ?Sized> Identifier for &mut I {
     type Handle = I::Handle;

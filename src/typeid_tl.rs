@@ -27,7 +27,9 @@ pub struct Type<T>(TypeHandle<T>, T);
 /// see module docs for details
 pub struct TypeHandle<T>(PhantomData<(crate::Invariant<T>, crate::ThreadLocal)>);
 
-unsafe impl<T> crate::Trivial for TypeHandle<T> {}
+impl<T> crate::Trivial for TypeHandle<T> {
+    const INSTANCE: Self = Self(PhantomData);
+}
 
 impl<T> Type<T> {
     /// Create a new `Type<T>` handle

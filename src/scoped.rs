@@ -95,7 +95,9 @@ pub struct Scoped<'id>(ScopedHandle<'id>);
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct ScopedHandle<'id>(PhantomData<crate::Invariant<&'id ()>>);
 
-unsafe impl crate::Trivial for ScopedHandle<'_> {}
+impl crate::Trivial for ScopedHandle<'_> {
+    const INSTANCE: Self = Self(PhantomData);
+}
 
 impl<'id> Scoped<'id> {
     #[inline]

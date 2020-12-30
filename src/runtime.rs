@@ -198,6 +198,10 @@ impl<I: IdAlloc, P: PoolMut<I::Id>> Runtime<I, P> {
     pub fn handle(&self) -> RuntimeHandle<I> { RuntimeHandle(self.id) }
 }
 
+impl<I: IdAlloc> Trivial for RuntimeHandle<I> where I::Id: Trivial {
+    const INSTANCE: Self = Self(Trivial::INSTANCE);
+}
+
 unsafe impl<I: IdAlloc> crate::Handle for RuntimeHandle<I> {}
 unsafe impl<I: IdAlloc, P: PoolMut<I::Id>> crate::Identifier for Runtime<I, P> {
     type Handle = RuntimeHandle<I>;
@@ -231,6 +235,8 @@ use core::{
     cmp::Ordering,
     hash::{Hash, Hasher},
 };
+
+use crate::Trivial;
 
 impl<I: IdAlloc> fmt::Debug for RuntimeHandle<I>
 where

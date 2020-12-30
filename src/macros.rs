@@ -203,7 +203,9 @@ pub unsafe trait Scalar: Private + Copy + Eq {
 }
 
 impl Private for () {}
-unsafe impl crate::Trivial for () {}
+impl crate::Trivial for () {
+    const INSTANCE: Self = ();
+}
 unsafe impl Scalar for () {
     #[doc(hidden)]
     type Local = bool;
