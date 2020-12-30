@@ -3,20 +3,20 @@
 [documentation](https://docs.rs/pui)
 
 A set of process unique identifiers that can be used to
-identifry types with minimal overhead within a single process
+identify types with minimal overhead within a single process
 
 ### features
 
-`std` (default) - if you have the `std` feature on, it will supercede the `alloc` feature.
+* `std` (default) - if you have the `std` feature on, it will supercede the `alloc` feature.
     This allows you to use:
      * `std` types to implement various traits, for example `Box<I>` will implemnt `Identifier` `I`
      * `thread_local` types (from the `*_tl`)
      * `make_global_reuse` (this requires internal locking using a `Mutex`)
 
-`alloc` - this allows you to use without pulling in all of `std`:
+* `alloc` - this allows you to use without pulling in all of `std`:
      * `alloc` types to implement various traits, for example `Box<I>` will implemnt `Identifier` `I`
 
-`nightly` -  this allows you to use:
+* `nightly` -  this allows you to use:
      * atomics on `no_std` targets that don't support 64-bit atomics
 
 ### synopsis
@@ -123,7 +123,9 @@ impl<'a, T, I: Identifier> std::ops::Index<Idx<I::Handle>> for Slice<'a, T, I> {
     type Output = T;
 
     fn index(&self, idx: Idx<I::Handle>) -> &Self::Output {
-        /// This is safe because 
+        /// This is safe because self owns `Idx<I::Handle>`
+        /// If `I::Handle: Trivial`, then this assert is a no-op
+        assert!(self.ident.owns(&idx.handle));
         unsafe { self.data.get_unchecked(idx.index) }
     }
 }

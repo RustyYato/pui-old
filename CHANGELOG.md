@@ -1,3 +1,9 @@
+# v 0.3.0
+
+* Renamed `Counter` to `IdAlloc`
+  * Allowed `IdAlloc` to be non-global
+* Made `Trivial` safe to implement
+
 # v 0.2.0
 
 * Adjusted docs for `trait Identifier`
