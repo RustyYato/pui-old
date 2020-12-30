@@ -1,4 +1,4 @@
-//! A runtime checked identifier
+//! A [`Runtime`] checked identifier
 //!
 //! It uses an id allocator (usually a simple id_alloc) to generate new ids,
 //! then uses those ids to verifiy it's identity. You can either use the `Global`
@@ -19,7 +19,7 @@ mod macros;
 mod pool;
 pub use pool::*;
 
-/// an opaque runtime id
+/// an opaque [`Runtime`] id
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct RuntimeId<T>(T);
 
@@ -98,23 +98,23 @@ cfg_if::cfg_if! {
 
         make_global! {
             (
-                /// A gobal allocator for runtime ids (not to be confused with a memory allocator)
+                /// A gobal allocator for [`Runtime`] ids (not to be confused with a memory allocator)
                 ///
-                /// This can be used with [`Runtime`](super::runtime::Runtime) to easily
-                /// create a new [`Runtime`](super::runtime::Runtime) [`Identifier`](super::Identifier)
+                /// This can be used with [`Runtime`](super::[`Runtime`]::Runtime) to easily
+                /// create a new [`Runtime`](super::[`Runtime`]::Runtime) [`Identifier`](super::Identifier)
                 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
             )
             (
-                /// The Id used by [`Global`](crate::runtime::Global)'s [`IdAlloc`](crate::runtime::IdAlloc)
+                /// The Id used by [`Global`](crate::[`Runtime`]::Global)'s [[`IdAlloc`]](crate::[`Runtime`]::IdAlloc)
                 /// implementation
                 #[derive(PartialOrd, Ord, Hash)]
             )
         }
 
-        /// A runtime checked identifier
+        /// A [`Runtime`] checked identifier
         ///
-        /// This uses a runtime id to verify it's identity, this id is provided
-        /// by the [`IdAlloc`](IdAlloc) trait, and ids may be reused via the [`PoolMut<I::Id>`](PoolMut)
+        /// This uses a [`Runtime`] id to verify it's identity, this id is provided
+        /// by the [[`IdAlloc`]](IdAlloc) trait, and ids may be reused via the [`PoolMut<I::Id>`](PoolMut)
         pub struct Runtime<I: IdAlloc = Global, P: PoolMut<I::Id> = ()> {
             id: I::Id,
             pool: P,
@@ -125,24 +125,24 @@ cfg_if::cfg_if! {
         pub struct RuntimeHandle<I: IdAlloc = Global>(pub I::Id);
 
         impl Runtime {
-            /// Create a new runtime using [`Global`](Global) without reusing ids
+            /// Create a new [`Runtime`] using [`Global`](Global) without reusing ids
             pub fn new() -> Self {
                 Self::with_id_alloc_and_pool(&mut Global, ())
             }
         }
 
         impl<P: PoolMut<GlobalId>> Runtime<Global, P> {
-            /// Create a new runtime using [`Global`](Global), reusing ids from the
+            /// Create a new [`Runtime`] using [`Global`](Global), reusing ids from the
             /// given pool
             pub fn with_pool(pool: P) -> Self {
                 Self::with_id_alloc_and_pool(&mut Global, pool)
             }
         }
     } else {
-        /// A runtime checked identifier
+        /// A [`Runtime`] checked identifier
         ///
-        /// This uses a runtime id to verify it's identity, this id is provided
-        /// by the [`IdAlloc`](IdAlloc) trait, and ids may be reused via the [`PoolMut<I::Id>`](PoolMut)
+        /// This uses a [`Runtime`] id to verify it's identity, this id is provided
+        /// by the [[`IdAlloc`]](IdAlloc) trait, and ids may be reused via the [`PoolMut<I::Id>`](PoolMut)
         pub struct Runtime<I: IdAlloc, P: PoolMut<I::Id> = ()> {
             id: I::Id,
             pool: P,
@@ -155,28 +155,17 @@ cfg_if::cfg_if! {
 }
 
 impl<I: IdAlloc> Runtime<I> {
-    /// Create a new runtime using the selected `IdAlloc` without reusing ids
-    ///
-    /// note: Rust will likely have a hard time inferring which id_alloc to use
-    /// so you will likely have to qualify which type to use `Runtime::<MyIdAlloc, _>::with_id_alloc()`
+    /// Create a new [`Runtime`] using the selected [`IdAlloc`] without reusing ids
     pub fn with_id_alloc(id_alloc: &mut I) -> Self { Self::with_id_alloc_and_pool(id_alloc, ()) }
 
-    /// Try to create a new runtime using the selected `IdAlloc` without reusing ids
-    ///
-    /// If the `IdAlloc` is exhausted, then this will return `None`. Otherwise it will
-    /// return a valid instance of `Runtime`
-    ///
-    /// note: Rust will likely have a hard time inferring which id_alloc to use
-    /// so you will likely have to qualify which type to use `Runtime::<MyIdAlloc, _>::with_id_alloc()`
+    /// Try to create a new [`Runtime`] using the selected [`IdAlloc`] without reusing ids
     pub fn try_with_id_alloc(id_alloc: &mut I) -> Option<Self> { Self::try_with_id_alloc_and_pool(id_alloc, ()) }
 }
 
 impl<I: IdAlloc, P: PoolMut<I::Id>> Runtime<I, P> {
-    /// Create a new runtime using the selected `IdAlloc` reusing ids with `PoolMut`
-    ///
-    /// note: Rust will likely have a hard time inferring which id_alloc to use
-    /// so you will likely have to qualify which type to use
-    /// `Runtime::<MyIdAlloc, _>::with_id_alloc_and_pool(pool)`
+    /// Create a new [`Runtime`] using the selected [`IdAlloc`] reusing ids
+    /// from the given pool. If the pool is empty it will aquire a new id from
+    /// the [`IdAlloc`]
     pub fn with_id_alloc_and_pool(id_alloc: &mut I, mut pool: P) -> Self {
         let id = match pool.take_mut() {
             Some(id_alloc) => id_alloc.0,
@@ -186,15 +175,9 @@ impl<I: IdAlloc, P: PoolMut<I::Id>> Runtime<I, P> {
         Runtime { id, pool }
     }
 
-    /// Try to create a new runtime using the selected `IdAlloc` reusing ids with `PoolMut`
-    ///
-    /// It will first try and pool an id, and if that's not possible,
-    /// it will generate a new id with `IdAlloc`. If the `IdAlloc` is exhausted
-    /// then this will return `None`. Otherwise it will return a valid instance of `Runtime`
-    ///
-    /// note: Rust will likely have a hard time inferring which id_alloc to use
-    /// so you will likely have to qualify which type to use
-    /// `Runtime::<MyIdAlloc, _>::with_id_alloc_and_pool(pool)`
+    /// Try to create a new [`Runtime`] using the selected [`IdAlloc`] reusing ids
+    /// from the given pool. If the pool is empty it will attempt to aquire a new id
+    /// from the [`IdAlloc`]
     pub fn try_with_id_alloc_and_pool(id_alloc: &mut I, mut pool: P) -> Option<Self> {
         let id = match pool.take_mut() {
             Some(id_alloc) => id_alloc.0,
@@ -205,7 +188,7 @@ impl<I: IdAlloc, P: PoolMut<I::Id>> Runtime<I, P> {
     }
 
     #[inline]
-    /// A handle that this runtime identifier owns
+    /// A handle that this [`Runtime`] identifier owns
     pub fn handle(&self) -> RuntimeHandle<I> { RuntimeHandle(self.id) }
 }
 

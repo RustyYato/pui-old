@@ -1,5 +1,5 @@
-/// Create a new type that implements [`IdAlloc`](runtime::IdAlloc)
-/// that can be used with [`Runtime`](runtime::Runtime)
+/// Create a new type that implements [`IdAlloc`](crate::runtime::IdAlloc)
+/// that can be used with [`Runtime`](crate::runtime::Runtime)
 ///
 /// For example,
 ///
@@ -11,7 +11,7 @@
 /// ```
 ///
 /// will generate a 24-bit id_alloc that is 1 byte aligned. You can use any type that implements
-/// [`Scalar`](Scalar) as the backing type of a id_alloc.
+/// [`Scalar`](crate::Scalar) as the backing type of a id_alloc.
 ///
 /// You can then use it like so,
 /// ```
@@ -21,7 +21,7 @@
 /// # #[cfg(feature = "atomic")]
 /// let runtime_id_alloc /* : Runtime<MyIdAlloc> */ = MyIdAlloc::new();
 /// ```
-/// or if you want to plug in a custom [`PoolMut<_>`](runtime::PoolMut),
+/// or if you want to plug in a custom [`PoolMut<_>`](crate::runtime::PoolMut),
 /// ```
 /// # use pui::runtime::Runtime;
 /// # #[cfg(feature = "atomic")]
@@ -89,8 +89,8 @@ macro_rules! make_global_id_alloc {
     };
 }
 
-/// Create a new type that implements [`IdAlloc`](runtime::IdAlloc)
-/// that can be used with [`Runtime`](runtime::Runtime)
+/// Create a new type that implements [`IdAlloc`](crate::runtime::IdAlloc)
+/// that can be used with [`Runtime`](crate::runtime::Runtime)
 /// which is implemented using a thread-local count
 ///
 /// For example,
@@ -102,7 +102,7 @@ macro_rules! make_global_id_alloc {
 /// ```
 ///
 /// will generate a 24-bit id_alloc that is 1 byte aligned. You can use any type that implements
-/// [`Scalar`](Scalar) as the backing type of a id_alloc.
+/// [`Scalar`](crate::Scalar) as the backing type of a id_alloc.
 ///
 /// You can then use it like so,
 /// ```
@@ -110,7 +110,7 @@ macro_rules! make_global_id_alloc {
 /// # pui::make_global_id_alloc_tl! { type MyIdAlloc(MyId) = [u8; 3]; }
 /// let runtime_id_alloc /* : Runtime<MyIdAlloc> */ = MyIdAlloc::new();
 /// ```
-/// or if you want to plug in a custom [`PoolMut<_>`](runtime::PoolMut),
+/// or if you want to plug in a custom [`PoolMut<_>`](crate::runtime::PoolMut),
 /// ```
 /// # use pui::runtime::Runtime;
 /// # pui::make_global_id_alloc_tl! { type MyIdAlloc(MyId) = [u8; 3]; }
@@ -307,8 +307,8 @@ macro_rules! make_global_pool {
     };
 }
 
-/// Create a new type that implements [`Pool`](runtime::Pool) and [`PoolMut`](runtime::PoolMut)
-/// that can be used with [`Runtime`](runtime::Runtime)
+/// Create a new type that implements [`Pool`](crate::runtime::Pool) and [`PoolMut`](crate::runtime::PoolMut)
+/// that can be used with [`Runtime`](crate::runtime::Runtime)
 ///
 /// For example,
 ///
@@ -317,6 +317,8 @@ macro_rules! make_global_pool {
 /// pui::make_global_pool! {
 ///     pub stack MyPool(pui::runtime::Global);
 /// }
+///
+/// let _my_pool = MyPool;
 /// ```
 ///
 /// will generate a global pool that yields used ids in FILO order.

@@ -1,4 +1,4 @@
-/// Create a new type that can be used with [`typeid_tl::Type`](typeid_tl::Type)
+/// Create a new type that can be used with [`typeid_tl::Type`](crate::typeid_tl::Type)
 ///
 /// calling `make_typeid_tl` like so,
 /// ```

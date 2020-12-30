@@ -1,4 +1,4 @@
-/// Create a new type that can be used with [`typeid::Type`](typeid::Type)
+/// Create a new type that can be used with [`typeid::Type`](crate::typeid::Type)
 ///
 /// calling `make_typeid` like so,
 /// ```
@@ -140,7 +140,7 @@ macro_rules! make_typeid {
     };
 }
 
-/// Create a new [`typeid::Type`](typeid::Type) that is guaranteed to be unique
+/// Create a new [`typeid::Type`](crate::typeid::Type) that is guaranteed to be unique
 ///
 /// ```
 /// # use pui::{make_anon_typeid, Identifier};
