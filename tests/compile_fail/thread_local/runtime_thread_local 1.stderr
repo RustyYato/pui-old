@@ -1,3 +1,51 @@
+warning: missing documentation for an associated type
+  --> $DIR/runtime.rs:52:5
+   |
+52 |     type Id: Copy + Eq;
+   |     ^^^^^^^^^^^^^^^^^^^
+   |
+note: the lint level is defined here
+  --> $DIR/lib.rs:2:9
+   |
+2  | #![warn(missing_docs)]
+   |         ^^^^^^^^^^^^
+
+warning: 1 warning emitted
+
+error[E0277]: the trait bound `Foo: PoolMut<GlobalId>` is not satisfied
+   --> $DIR/runtime_thread_local 1.rs:10:40
+    |
+10  |       assert_send_sync(Global::with_pool(Foo))
+    |                                          ^^^ the trait `PoolMut<GlobalId>` is not implemented for `Foo`
+    |
+   ::: $WORKSPACE/src/runtime.rs
+    |
+    | /         make_global! {
+101 | |             (
+102 | |                 /// A gobal allocator for runtime ids (not to be confused with a memory allocator)
+103 | |                 ///
+...   |
+112 | |             )
+113 | |         }
+    | |_________- required by this bound in `pui::runtime::Global::with_pool`
+    |
+    = help: the following implementations were found:
+              <Foo as PoolMut<pui::runtime::Global>>
+
+error[E0277]: the trait bound `Foo: PoolMut<GlobalId>` is not satisfied
+   --> $DIR/runtime_thread_local 1.rs:10:22
+    |
+10  |     assert_send_sync(Global::with_pool(Foo))
+    |                      ^^^^^^^^^^^^^^^^^^^^^^ the trait `PoolMut<GlobalId>` is not implemented for `Foo`
+    |
+   ::: $WORKSPACE/src/runtime.rs
+    |
+    |         pub struct Runtime<G: IdAlloc = Global, P: PoolMut<G::Id> = ()> {
+    |                                                      -------------- required by this bound in `Runtime`
+    |
+    = help: the following implementations were found:
+              <Foo as PoolMut<pui::runtime::Global>>
+
 error[E0277]: `*mut ()` cannot be sent between threads safely
   --> $DIR/runtime_thread_local 1.rs:10:5
    |

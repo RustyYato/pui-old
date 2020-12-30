@@ -1,34 +1,37 @@
 #![cfg(feature = "atomic")]
 
-use pui::{make_global_pool, runtime::Global};
+use pui::{
+    make_global_pool,
+    runtime::{Global, GlobalId},
+};
 
 #[cfg(feature = "std")]
 make_global_pool! {
-    stack Stack(Global);
+    stack Stack(GlobalId);
 }
 
 #[cfg(feature = "std")]
 make_global_pool! {
-    thread_local stack StackTl(Global);
+    thread_local stack StackTl(GlobalId);
 }
 
 #[cfg(feature = "std")]
 make_global_pool! {
-    queue Queue(Global);
+    queue Queue(GlobalId);
 }
 
 #[cfg(feature = "std")]
 make_global_pool! {
-    thread_local queue QueueTl(Global);
+    thread_local queue QueueTl(GlobalId);
 }
 
 make_global_pool! {
-    one One(Global);
+    one One(GlobalId);
 }
 
 #[cfg(feature = "std")]
 make_global_pool! {
-    thread_local one OneTl(Global);
+    thread_local one OneTl(GlobalId);
 }
 
 #[test]

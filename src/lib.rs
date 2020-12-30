@@ -11,16 +11,16 @@
 //!
 //! ### features
 //!
-//! `std` (default) - if you have the `std` feature on, it will supercede the `alloc` feature.
+//! * `std` (default) - if you have the `std` feature on, it will supercede the `alloc` feature.
 //!     This allows you to use:
 //!      * `std` types to implement various traits, for example `Box<I>` will implemnt `Identifier` `I`
 //!      * `thread_local` types (from the `*_tl`)
 //!      * `make_global_reuse` (this requires internal locking using a `Mutex`)
 //!
-//! `alloc` - this allows you to use without pulling in all of `std`:
+//! * `alloc` - this allows you to use without pulling in all of `std`:
 //!      * `alloc` types to implement various traits, for example `Box<I>` will implemnt `Identifier` `I`
 //!
-//! `nightly` -  this allows you to use:
+//! * `nightly` -  this allows you to use:
 //!      * atomics on `no_std` targets that don't support 64-bit atomics
 
 #[cfg(feature = "std")]

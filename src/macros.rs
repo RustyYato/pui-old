@@ -181,7 +181,7 @@ mod private {
     pub trait Private {}
 }
 
-/// a type that can be used as the backing type in `make_counter` an `make_counter_tl`
+/// a type that can be used as the backing type in `make_global_id_alloc` an `make_global_id_alloc_tl`
 pub unsafe trait Scalar: Private + Copy + Eq {
     #[doc(hidden)]
     type Local;

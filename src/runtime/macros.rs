@@ -1,162 +1,178 @@
-/// Create a new type that implements [`Counter`](runtime::Counter)
+/// Create a new type that implements [`IdAlloc`](runtime::IdAlloc)
 /// that can be used with [`Runtime`](runtime::Runtime)
 ///
 /// For example,
 ///
 /// ```
 /// # #[cfg(feature = "atomic")]
-/// pui::make_counter! {
-///     pub type MyCounter = [u8; 3];
+/// pui::make_global_id_alloc! {
+///     pub type MyIdAlloc(MyId) = [u8; 3];
 /// }
 /// ```
 ///
-/// will generate a 24-bit counter that is 1 byte aligned. You can use any type that implements
-/// [`Scalar`](Scalar) as the backing type of a counter.
+/// will generate a 24-bit id_alloc that is 1 byte aligned. You can use any type that implements
+/// [`Scalar`](Scalar) as the backing type of a id_alloc.
 ///
 /// You can then use it like so,
 /// ```
 /// # use pui::runtime::Runtime;
 /// # #[cfg(feature = "atomic")]
-/// # pui::make_counter! { type MyCounter = [u8; 3]; }
+/// # pui::make_global_id_alloc! { type MyIdAlloc(MyId) = [u8; 3]; }
 /// # #[cfg(feature = "atomic")]
-/// let runtime_counter /* : Runtime<MyCounter> */ = MyCounter::new();
+/// let runtime_id_alloc /* : Runtime<MyIdAlloc> */ = MyIdAlloc::new();
 /// ```
 /// or if you want to plug in a custom [`PoolMut<_>`](runtime::PoolMut),
 /// ```
 /// # use pui::runtime::Runtime;
 /// # #[cfg(feature = "atomic")]
-/// # pui::make_counter! { type MyCounter = [u8; 3]; }
+/// # pui::make_global_id_alloc! { type MyIdAlloc(MyId) = [u8; 3]; }
 /// # let pool = ();
 /// # #[cfg(feature = "atomic")]
-/// let runtime_counter /* : Runtime<MyCounter, _> */ = MyCounter::with_pool(pool);
+/// let runtime_id_alloc /* : Runtime<MyIdAlloc, _> */ = MyIdAlloc::with_pool(pool);
 /// ```
 #[macro_export]
-macro_rules! make_counter {
-    ($(#[$meta:meta])*$v:vis type $name:ident = $inner:ty;) => {
+macro_rules! make_global_id_alloc {
+    ($(#[$meta:meta])*$v:vis type $name:ident($(#[$id_meta:meta])* $id:ident) = $inner:ty;) => {
         $(#[$meta])*
-        #[derive(Clone, Copy, PartialEq, Eq)]
-        $v struct $name($inner);
+        $v struct $name;
+
+        $(#[$id_meta])*
+        #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        $v struct $id($inner);
 
         impl $name {
             /// Create a new new `Runtime`
             ///
-            /// panic if the counter is exhausted
+            /// panic if the id_alloc is exhausted
             pub fn new() -> $crate::runtime::Runtime<Self> {
-                $crate::runtime::Runtime::with_counter()
+                $crate::runtime::Runtime::with_id_alloc(&mut Self)
             }
 
-            /// Tryr to create a new new `Runtime`, return `None` if this counter is exhausted
+            /// Tryr to create a new new `Runtime`, return `None` if this id_alloc is exhausted
             pub fn try_new() -> Option<$crate::runtime::Runtime<Self>> {
-                $crate::runtime::Runtime::try_with_counter()
+                $crate::runtime::Runtime::try_with_id_alloc(&mut Self)
             }
 
             /// Create a new new `Runtime` with the given pool
             ///
-            /// panic if the pool is empty and the counter is exhausted
-            pub fn with_pool<P: $crate::runtime::PoolMut<Self>>(pool: P) -> $crate::runtime::Runtime<Self, P> {
-                $crate::runtime::Runtime::with_counter_and_pool(pool)
+            /// panic if the pool is empty and the id_alloc is exhausted
+            pub fn with_pool<P: $crate::runtime::PoolMut<$id>>(pool: P) -> $crate::runtime::Runtime<Self, P> {
+                $crate::runtime::Runtime::with_id_alloc_and_pool(&mut Self, pool)
             }
 
             /// Try to create a new new `Runtime` with the given pool
-            /// return None if the pool is empty and the counter is exhausted
-            pub fn try_with_pool<P: $crate::runtime::PoolMut<Self>>(pool: P) -> Option<$crate::runtime::Runtime<Self, P>> {
-                $crate::runtime::Runtime::try_with_counter_and_pool(pool)
+            /// return None if the pool is empty and the id_alloc is exhausted
+            pub fn try_with_pool<P: $crate::runtime::PoolMut<$id>>(pool: P) -> Option<$crate::runtime::Runtime<Self, P>> {
+                $crate::runtime::Runtime::try_with_id_alloc_and_pool(&mut Self, pool)
             }
         }
 
-        unsafe impl $crate::runtime::Counter for $name {
-            fn next() -> Self {
-                <Self as $crate::runtime::Counter>::try_next().expect($crate::macros::concat!(
+        unsafe impl $crate::runtime::IdAlloc for $name {
+            type Id = $id;
+
+            fn next(&mut self) -> $id {
+                <Self as $crate::runtime::IdAlloc>::try_next(self).expect($crate::macros::concat!(
                     "Cannot overflow <",
                     $crate::macros::stringify!($name),
-                    " as pui::runtime::Counter>::next"
+                    " as pui::runtime::IdAlloc>::next"
                 ))
             }
 
-            fn try_next() -> Option<Self> {
+            fn try_next(&mut self) -> Option<$id> {
                 #[allow(non_upper_case_globals)]
                 static make_runtime_NEXT_ID: <$inner as $crate::macros::Scalar>::Atomic =
                     <$inner as $crate::macros::Scalar>::INIT_ATOMIC;
 
-                <$inner as $crate::macros::Scalar>::inc_atomic(&make_runtime_NEXT_ID).map($name)
+                <$inner as $crate::macros::Scalar>::inc_atomic(&make_runtime_NEXT_ID).map($id)
             }
         }
     };
 }
 
-/// Create a new type that implements [`Counter`](runtime::Counter)
+/// Create a new type that implements [`IdAlloc`](runtime::IdAlloc)
 /// that can be used with [`Runtime`](runtime::Runtime)
 /// which is implemented using a thread-local count
 ///
 /// For example,
 ///
 /// ```
-/// pui::make_counter_tl! {
-///     pub type MyCounter = [u8; 3];
+/// pui::make_global_id_alloc_tl! {
+///     pub type MyIdAlloc(MyId) = [u8; 3];
 /// }
 /// ```
 ///
-/// will generate a 24-bit counter that is 1 byte aligned. You can use any type that implements
-/// [`Scalar`](Scalar) as the backing type of a counter.
+/// will generate a 24-bit id_alloc that is 1 byte aligned. You can use any type that implements
+/// [`Scalar`](Scalar) as the backing type of a id_alloc.
 ///
 /// You can then use it like so,
 /// ```
 /// # use pui::runtime::Runtime;
-/// # pui::make_counter_tl! { type MyCounter = [u8; 3]; }
-/// let runtime_counter /* : Runtime<MyCounter> */ = MyCounter::new();
+/// # pui::make_global_id_alloc_tl! { type MyIdAlloc(MyId) = [u8; 3]; }
+/// let runtime_id_alloc /* : Runtime<MyIdAlloc> */ = MyIdAlloc::new();
 /// ```
 /// or if you want to plug in a custom [`PoolMut<_>`](runtime::PoolMut),
 /// ```
 /// # use pui::runtime::Runtime;
-/// # pui::make_counter_tl! { type MyCounter = [u8; 3]; }
+/// # pui::make_global_id_alloc_tl! { type MyIdAlloc(MyId) = [u8; 3]; }
 /// # let pool = ();
-/// let runtime_counter /* : Runtime<MyCounter, _> */ = MyCounter::with_pool(pool);
+/// let runtime_id_alloc /* : Runtime<MyIdAlloc, _> */ = MyIdAlloc::with_pool(pool);
 /// ```
 #[macro_export]
 #[cfg_attr(doc, doc(cfg(feature = "std")))]
-macro_rules! make_counter_tl {
-    ($(#[$meta:meta])*$v:vis type $name:ident = $inner:ty;) => {
+macro_rules! make_global_id_alloc_tl {
+    ($(#[$meta:meta])* $v:vis type $name:ident($(#[$id_meta:meta])* $id:ident) = $inner:ty;) => {
         $(#[$meta])*
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        $v struct $name {
+            thread_local: $crate::macros::PhantomData<$crate::ThreadLocal>
+        }
+        #[doc(hidden)]
+        #[allow(non_upper_case_globals)]
+        $v const $name: $name = $name { thread_local: $crate::macros::PhantomData };
+
+        $(#[$id_meta])*
         #[derive(Clone, Copy, PartialEq, Eq)]
-        $v struct $name($inner, $crate::macros::PhantomData<$crate::ThreadLocal>);
+        $v struct $id($inner, $crate::macros::PhantomData<$crate::ThreadLocal>);
 
         impl $name {
             /// Create a new new `Runtime`
             ///
-            /// panic if the counter is exhausted
+            /// panic if the id_alloc is exhausted
             pub fn new() -> $crate::runtime::Runtime<Self> {
-                $crate::runtime::Runtime::with_counter()
+                $crate::runtime::Runtime::with_id_alloc(&mut $name)
             }
 
-            /// Tryr to create a new new `Runtime`, return `None` if this counter is exhausted
+            /// Tryr to create a new new `Runtime`, return `None` if this id_alloc is exhausted
             pub fn try_new() -> Option<$crate::runtime::Runtime<Self>> {
-                $crate::runtime::Runtime::try_with_counter()
+                $crate::runtime::Runtime::try_with_id_alloc(&mut $name)
             }
 
             /// Create a new new `Runtime` with the given pool
             ///
-            /// panic if the pool is empty and the counter is exhausted
-            pub fn with_pool<P: $crate::runtime::PoolMut<Self>>(pool: P) -> $crate::runtime::Runtime<Self, P> {
-                $crate::runtime::Runtime::with_counter_and_pool(pool)
+            /// panic if the pool is empty and the id_alloc is exhausted
+            pub fn with_pool<P: $crate::runtime::PoolMut<$id>>(pool: P) -> $crate::runtime::Runtime<Self, P> {
+                $crate::runtime::Runtime::with_id_alloc_and_pool(&mut $name, pool)
             }
 
             /// Try to create a new new `Runtime` with the given pool
-            /// return None if the pool is empty and the counter is exhausted
-            pub fn try_with_pool<P: $crate::runtime::PoolMut<Self>>(pool: P) -> Option<$crate::runtime::Runtime<Self, P>> {
-                $crate::runtime::Runtime::try_with_counter_and_pool(pool)
+            /// return None if the pool is empty and the id_alloc is exhausted
+            pub fn try_with_pool<P: $crate::runtime::PoolMut<$id>>(pool: P) -> Option<$crate::runtime::Runtime<Self, P>> {
+                $crate::runtime::Runtime::try_with_id_alloc_and_pool(&mut $name, pool)
             }
         }
 
-        unsafe impl $crate::runtime::Counter for $name {
-            fn next() -> Self {
-                <Self as $crate::runtime::Counter>::try_next().expect($crate::macros::concat!(
+        unsafe impl $crate::runtime::IdAlloc for $name {
+            type Id = $id;
+
+            fn next(&mut self) -> $id {
+                <Self as $crate::runtime::IdAlloc>::try_next(self).expect($crate::macros::concat!(
                     "Cannot overflow <",
                     $crate::macros::stringify!($name),
-                    " as pui::runtime::Counter>::next"
+                    " as pui::runtime::IdAlloc>::next"
                 ))
             }
 
-            fn try_next() -> Option<Self> {
+            fn try_next(&mut self) -> Option<$id> {
                 $crate::macros::thread_local! {
                     #[allow(non_upper_case_globals)]
                     static make_runtime_NEXT_ID: $crate::macros::Cell<<$inner as $crate::macros::Scalar>::Local> =
@@ -167,7 +183,7 @@ macro_rules! make_counter_tl {
                     let (val, id) = <$inner as $crate::macros::Scalar>::inc_local(value.get())?;
                     value.set(val);
                     Some(id)
-                }).map(|val| $name(val, $crate::macros::PhantomData))
+                }).map(|val| $id(val, $crate::macros::PhantomData))
             }
         }
     };
@@ -311,10 +327,10 @@ macro_rules! make_global_pool {
 /// * thread_local stack - FILO order, but stores ids in a thread local (this is best used with thread local ids)
 /// * queue - FIFO order
 /// * thread_local queue - FIFO order, but stores ids in a thread local (this is best used with thread local ids)
-/// * one - stores a single id, best used with a counter backed by `()`
+/// * one - stores a single id, best used with a id_alloc backed by `()`
 /// * thread_local one - stores a single id, best used with a thread_local id backed by `()`
 ///
-/// in place of `pui::runtime::Global` you can use any type that implements `Counter`
+/// in place of `pui::runtime::Global` you can use any type that implements `IdAlloc`
 #[macro_export]
 #[cfg(any(doc, feature = "std"))]
 macro_rules! make_global_pool {

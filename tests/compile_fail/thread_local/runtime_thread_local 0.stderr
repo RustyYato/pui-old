@@ -1,27 +1,25 @@
-error[E0277]: `*mut ()` cannot be sent between threads safely
- --> $DIR/runtime_thread_local 0.rs:7:5
-  |
-6 |     fn assert_send_sync<T: Send + Sync>(_: T) {}
-  |                            ---- required by this bound in `assert_send_sync`
-7 |     assert_send_sync(Foo::new());
-  |     ^^^^^^^^^^^^^^^^ `*mut ()` cannot be sent between threads safely
-  |
-  = help: within `Runtime<Foo>`, the trait `Send` is not implemented for `*mut ()`
-  = note: required because it appears within the type `ThreadLocal`
-  = note: required because it appears within the type `PhantomData<ThreadLocal>`
-  = note: required because it appears within the type `Foo`
-  = note: required because it appears within the type `Runtime<Foo>`
+warning: missing documentation for an associated type
+  --> $DIR/runtime.rs:52:5
+   |
+52 |     type Id: Copy + Eq;
+   |     ^^^^^^^^^^^^^^^^^^^
+   |
+note: the lint level is defined here
+  --> $DIR/lib.rs:2:9
+   |
+2  | #![warn(missing_docs)]
+   |         ^^^^^^^^^^^^
 
-error[E0277]: `*mut ()` cannot be shared between threads safely
- --> $DIR/runtime_thread_local 0.rs:7:5
+warning: 1 warning emitted
+
+error: no rules expected the token `=`
+ --> $DIR/runtime_thread_local 0.rs:2:14
   |
-6 |     fn assert_send_sync<T: Send + Sync>(_: T) {}
-  |                                   ---- required by this bound in `assert_send_sync`
+2 |     type Foo = u8;
+  |              ^ no rules expected this token in macro call
+
+error[E0433]: failed to resolve: use of undeclared type `Foo`
+ --> $DIR/runtime_thread_local 0.rs:7:22
+  |
 7 |     assert_send_sync(Foo::new());
-  |     ^^^^^^^^^^^^^^^^ `*mut ()` cannot be shared between threads safely
-  |
-  = help: within `Runtime<Foo>`, the trait `Sync` is not implemented for `*mut ()`
-  = note: required because it appears within the type `ThreadLocal`
-  = note: required because it appears within the type `PhantomData<ThreadLocal>`
-  = note: required because it appears within the type `Foo`
-  = note: required because it appears within the type `Runtime<Foo>`
+  |                      ^^^ use of undeclared type `Foo`

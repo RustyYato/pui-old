@@ -5,13 +5,13 @@ mod macros;
 
 #[test]
 fn smoke() {
-    pui::make_counter! {
+    pui::make_global_id_alloc! {
         #[derive(Debug)]
-        type TinyCounter = u8;
+        type TinyIdAlloc(TinyId) = u8;
     }
 
-    let a = TinyCounter::new();
-    let b = TinyCounter::new();
+    let a = TinyIdAlloc::new();
+    let b = TinyIdAlloc::new();
 
     assert_ne!(a, b);
 
@@ -24,17 +24,17 @@ fn smoke() {
 
 #[test]
 fn exhaust_u8() {
-    pui::make_counter! {
-        type TinyCounter = u8;
+    pui::make_global_id_alloc! {
+        type TinyIdAlloc(TinyId) = u8;
     }
 
     let mut handles = Vec::new();
 
     for _ in 0..255 {
-        handles.push(TinyCounter::new().handle())
+        handles.push(TinyIdAlloc::new().handle())
     }
 
-    assert!(TinyCounter::try_new().is_none());
+    assert!(TinyIdAlloc::try_new().is_none());
 
     for (ai, a) in handles.iter().enumerate() {
         for (bi, b) in handles.iter().enumerate() {
