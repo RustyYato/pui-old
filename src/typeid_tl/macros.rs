@@ -81,7 +81,7 @@ macro_rules! make_typeid_tl {
     };
     ($(#[$meta:meta])*$v:vis type $ident:ident;) => {
         $(#[$meta])*
-        $v struct $ident($crate::macros::MacroConstructed);
+        $v struct $ident($crate::macros::MacroConstructed<Self>);
 
         impl $ident {
             unsafe fn __make_typeid_tl_get_it<F: FnOnce(&$crate::macros::LocalOnceFlag) -> R, R>(f: F) -> R {

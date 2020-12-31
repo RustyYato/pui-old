@@ -5,6 +5,7 @@
   * `Identifier`s must *always* be unique on every thread they can be accessed on
     *even after they are dropped*
   * This allows them to be usd for safely used for unchecked indexing
+* Fix a potential soundness hole in `make_typeid` and `make_typeid_tl`
 
 # v 0.3.0
 

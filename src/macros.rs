@@ -177,11 +177,11 @@ impl LocalOnceFlag {
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct MacroConstructed(());
+pub struct MacroConstructed<T>(PhantomData<T>);
 
-impl MacroConstructed {
+impl<T> MacroConstructed<T> {
     /// This function should only be called from a macro defined in pui
-    pub const unsafe fn new() -> Self { Self(()) }
+    pub const unsafe fn new() -> Self { Self(PhantomData) }
 }
 
 pub(crate) use private::Private;

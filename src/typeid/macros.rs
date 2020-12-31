@@ -75,7 +75,7 @@ macro_rules! make_typeid {
     };
     ($(#[$meta:meta])*$v:vis type $ident:ident;) => {
         $(#[$meta])*
-        $v struct $ident($crate::macros::MacroConstructed);
+        $v struct $ident($crate::macros::MacroConstructed<Self>);
 
 
         impl $ident {
