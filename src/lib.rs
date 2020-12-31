@@ -3,7 +3,6 @@
 #![warn(rust_2018_idioms)]
 #![cfg_attr(doc, feature(doc_cfg))]
 #![cfg_attr(feature = "nightly", feature(cfg_target_has_atomic))]
-#![feature(negative_impls)]
 
 //! A set of process unique identifiers that can be used to
 //! identify values with minimal overhead within a single process
