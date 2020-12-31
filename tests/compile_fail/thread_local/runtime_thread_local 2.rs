@@ -1,7 +1,7 @@
-use pui::runtime::Global;
+use pui::runtime::{Global, GlobalId};
 
 pui::make_global_pool! {
-    thread_local queue Foo(Global);
+    thread_local queue Foo(GlobalId);
 }
 
 fn main() {

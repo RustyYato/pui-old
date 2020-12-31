@@ -1,5 +1,5 @@
 pui::make_global_id_alloc_tl! {
-    type Foo = u8;
+    type Foo(FooId) = u8;
 }
 
 fn main() {

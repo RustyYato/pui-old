@@ -57,101 +57,80 @@ pub unsafe trait IdAlloc {
     fn try_alloc(&mut self) -> Option<Self::Id>;
 }
 
-cfg_if::cfg_if! {
-    if #[cfg(feature = "atomic")] {
-        macro_rules! make_global {
-            (($(#[$meta:meta])*) ($(#[$id_meta:meta])*)) => {
+macro_rules! make_global {
+    (($(#[$meta:meta])*) ($(#[$id_meta:meta])*)) => {
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "nightly")] {
                 cfg_if::cfg_if! {
-                    if #[cfg(feature = "nightly")] {
-                        cfg_if::cfg_if! {
-                            if #[cfg(target_has_atomic = "64")] {
-                                crate::make_global_id_alloc! {
-                                    $(#[$meta])*
-                                    pub type Global($(#[$id_meta])* GlobalId) = core::num::NonZeroU64;
-                                }
-                            } else if #[cfg(target_has_atomic = "32")]{
-                                crate::make_global_id_alloc! {
-                                    $(#[$meta])*
-                                    pub type Global($(#[$id_meta])* GlobalId) = core::num::NonZeroU32;
-                                }
-                            } else if #[cfg(target_has_atomic = "16")]{
-                                crate::make_global_id_alloc! {
-                                    $(#[$meta])*
-                                    pub type Global($(#[$id_meta])* GlobalId) = core::num::NonZeroU16;
-                                }
-                            } else {
-                                crate::make_global_id_alloc! {
-                                    $(#[$meta])*
-                                    pub type Global($(#[$id_meta])* GlobalId) = core::num::NonZeroU8;
-                                }
-                            }
-                        }
-                    } else {
+                    if #[cfg(target_has_atomic = "64")] {
                         crate::make_global_id_alloc! {
                             $(#[$meta])*
                             pub type Global($(#[$id_meta])* GlobalId) = core::num::NonZeroU64;
                         }
+                    } else if #[cfg(target_has_atomic = "32")]{
+                        crate::make_global_id_alloc! {
+                            $(#[$meta])*
+                            pub type Global($(#[$id_meta])* GlobalId) = core::num::NonZeroU32;
+                        }
+                    } else if #[cfg(target_has_atomic = "16")]{
+                        crate::make_global_id_alloc! {
+                            $(#[$meta])*
+                            pub type Global($(#[$id_meta])* GlobalId) = core::num::NonZeroU16;
+                        }
+                    } else {
+                        crate::make_global_id_alloc! {
+                            $(#[$meta])*
+                            pub type Global($(#[$id_meta])* GlobalId) = core::num::NonZeroU8;
+                        }
                     }
                 }
-            };
-        }
-
-        make_global! {
-            (
-                /// A gobal allocator for [`Runtime`] ids (not to be confused with a memory allocator)
-                ///
-                /// This can be used with [`Runtime`](super::[`Runtime`]::Runtime) to easily
-                /// create a new [`Runtime`](super::[`Runtime`]::Runtime) [`Identifier`](super::Identifier)
-                #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-            )
-            (
-                /// The Id used by [`Global`](crate::[`Runtime`]::Global)'s [[`IdAlloc`]](crate::[`Runtime`]::IdAlloc)
-                /// implementation
-                #[derive(PartialOrd, Ord, Hash)]
-            )
-        }
-
-        /// A [`Runtime`] checked identifier
-        ///
-        /// This uses a [`Runtime`] id to verify it's identity, this id is provided
-        /// by the [[`IdAlloc`]](IdAlloc) trait, and ids may be reused via the [`PoolMut<I::Id>`](PoolMut)
-        pub struct Runtime<I: IdAlloc = Global, P: PoolMut<I::Id> = ()> {
-            id: I::Id,
-            pool: P,
-        }
-
-        /// A handle to a [`Runtime`](Runtime) identifier
-        #[repr(transparent)]
-        pub struct RuntimeHandle<I: IdAlloc = Global>(pub I::Id);
-
-        impl Runtime {
-            /// Create a new [`Runtime`] using [`Global`](Global) without reusing ids
-            pub fn new() -> Self {
-                Self::with_id_alloc_and_pool(&mut Global, ())
+            } else {
+                crate::make_global_id_alloc! {
+                    $(#[$meta])*
+                    pub type Global($(#[$id_meta])* GlobalId) = core::num::NonZeroU64;
+                }
             }
         }
+    };
+}
 
-        impl<P: PoolMut<GlobalId>> Runtime<Global, P> {
-            /// Create a new [`Runtime`] using [`Global`](Global), reusing ids from the
-            /// given pool
-            pub fn with_pool(pool: P) -> Self {
-                Self::with_id_alloc_and_pool(&mut Global, pool)
-            }
-        }
-    } else {
-        /// A [`Runtime`] checked identifier
+make_global! {
+    (
+        /// A gobal allocator for [`Runtime`] ids (not to be confused with a memory allocator)
         ///
-        /// This uses a [`Runtime`] id to verify it's identity, this id is provided
-        /// by the [[`IdAlloc`]](IdAlloc) trait, and ids may be reused via the [`PoolMut<I::Id>`](PoolMut)
-        pub struct Runtime<I: IdAlloc, P: PoolMut<I::Id> = ()> {
-            id: I::Id,
-            pool: P,
-        }
+        /// This can be used with [`Runtime`](super::[`Runtime`]::Runtime) to easily
+        /// create a new [`Runtime`](super::[`Runtime`]::Runtime) [`Identifier`](super::Identifier)
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    )
+    (
+        /// The Id used by [`Global`](crate::[`Runtime`]::Global)'s [[`IdAlloc`]](crate::[`Runtime`]::IdAlloc)
+        /// implementation
+        #[derive(PartialOrd, Ord, Hash)]
+    )
+}
 
-        /// A handle to a [`Runtime`](Runtime) identifier
-        #[repr(transparent)]
-        pub struct RuntimeHandle<I: IdAlloc>(pub I::Id);
-    }
+/// A [`Runtime`] checked identifier
+///
+/// This uses a [`Runtime`] id to verify it's identity, this id is provided
+/// by the [[`IdAlloc`]](IdAlloc) trait, and ids may be reused via the [`PoolMut<I::Id>`](PoolMut)
+pub struct Runtime<I: IdAlloc = Global, P: PoolMut<I::Id> = ()> {
+    id: I::Id,
+    pool: P,
+}
+
+/// A handle to a [`Runtime`](Runtime) identifier
+#[repr(transparent)]
+pub struct RuntimeHandle<I: IdAlloc = Global>(pub I::Id);
+
+impl Runtime {
+    /// Create a new [`Runtime`] using [`Global`](Global) without reusing ids
+    pub fn new() -> Self { Self::with_id_alloc_and_pool(&mut Global, ()) }
+}
+
+impl<P: PoolMut<GlobalId>> Runtime<Global, P> {
+    /// Create a new [`Runtime`] using [`Global`](Global), reusing ids from the
+    /// given pool
+    pub fn with_pool(pool: P) -> Self { Self::with_id_alloc_and_pool(&mut Global, pool) }
 }
 
 impl<I: IdAlloc> Runtime<I> {

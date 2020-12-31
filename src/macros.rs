@@ -20,9 +20,10 @@ pub use std::thread_local;
 #[cfg(not(feature = "std"))]
 pub use crate::thread_local;
 
-use core::num::*;
-#[cfg(feature = "atomic")]
-use core::sync::atomic::{Ordering::*, *};
+use core::{
+    num::*,
+    sync::atomic::{Ordering::*, *},
+};
 
 #[doc(hidden)]
 #[macro_export]
@@ -35,34 +36,22 @@ macro_rules! thread_local {
     };
 }
 
-#[doc(hidden)]
-#[macro_export]
-#[cfg(feature = "atomic")]
-macro_rules! if_atomic_feature {
-    ($($tokens:tt)*) => { $($tokens)* };
-}
-
-#[doc(hidden)]
-#[macro_export]
-#[cfg(not(feature = "atomic"))]
-macro_rules! if_atomic_feature {
-    ($($tokens:tt)*) => {
-        compile_error! { "the `atomic` feature on `pui` must be turned on to allow syncronized globals" }
-    };
-}
-
-#[cfg(feature = "atomic")]
 pub struct OnceFlag(AtomicBool);
 
-#[cfg(feature = "atomic")]
 impl OnceFlag {
     pub const fn new() -> Self { Self(AtomicBool::new(true)) }
 
-    pub fn take(&self) -> bool { self.0.compare_and_swap(true, false, Relaxed) }
+    pub fn take(&self) -> bool {
+        self.0
+            .compare_exchange(true, false, Relaxed, Relaxed)
+            .unwrap_or_else(core::convert::identity)
+    }
 }
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "std")] {
+        use crossbeam_utils::Backoff;
+
         pub struct ResettableOnceFlag {
             locked: AtomicBool,
             once: Once,
@@ -104,9 +93,14 @@ cfg_if::cfg_if! {
                     let (mutex, cv) = self.init();
 
                     let mut guard = mutex.lock().unwrap();
+                    let backoff = Backoff::new();
 
-                    while self.locked.compare_and_swap(false, true, Acquire) {
-                        guard = cv.wait(guard).unwrap();
+                    while let Err(_) = self.locked.compare_exchange_weak(false, true, Acquire, Acquire) {
+                        backoff.spin();
+                        if backoff.is_completed() {
+                            guard = cv.wait(guard).unwrap();
+                            backoff.reset();
+                        }
                     }
                 }
 
@@ -123,7 +117,7 @@ cfg_if::cfg_if! {
                 self.init().1.notify_one();
             }
         }
-    } else if #[cfg(feature = "atomic")] {
+    } else {
         pub struct ResettableOnceFlag(AtomicBool);
 
         impl ResettableOnceFlag {
@@ -132,7 +126,7 @@ cfg_if::cfg_if! {
             }
 
             pub fn acquire(&self) -> bool {
-                self.0.compare_and_swap(true, false, Acquire)
+                self.0.compare_exchange(true, false, Acquire, Acquire).is_ok()
             }
 
             pub fn try_acquire(&self) -> bool {
@@ -146,18 +140,16 @@ cfg_if::cfg_if! {
     }
 }
 
-#[cfg(feature = "atomic")]
 pub struct InitFlag(AtomicU8);
 
-#[cfg(feature = "atomic")]
 impl InitFlag {
     pub const fn new() -> Self { Self(AtomicU8::new(0)) }
 
-    pub fn start_init(&self) -> bool { 0b00 == self.0.compare_and_swap(0b00, 0b10, Acquire) }
+    pub fn start_init(&self) -> bool { self.0.compare_exchange(0b00, 0b10, Acquire, Acquire).is_ok() }
 
     pub fn finish_init(&self) { self.0.store(0b11, Release); }
 
-    pub fn start_take(&self) -> bool { 0b11 == self.0.compare_and_swap(0b11, 0b01, Acquire) }
+    pub fn start_take(&self) -> bool { self.0.compare_exchange(0b11, 0b01, Acquire, Acquire).is_ok() }
 
     pub fn finish_take(&self) { self.0.store(0b00, Release); }
 }
@@ -202,19 +194,16 @@ pub unsafe trait Scalar: Private + Copy + Eq {
     #[doc(hidden)]
     type Local;
     #[doc(hidden)]
-    #[cfg(feature = "atomic")]
     type Atomic;
 
     #[doc(hidden)]
     const INIT_LOCAL: Self::Local;
     #[doc(hidden)]
-    #[cfg(feature = "atomic")]
     const INIT_ATOMIC: Self::Atomic;
 
     #[doc(hidden)]
     fn inc_local(_: Self::Local) -> Option<(Self::Local, Self)>;
     #[doc(hidden)]
-    #[cfg(feature = "atomic")]
     fn inc_atomic(_: &Self::Atomic) -> Option<Self>;
 }
 
@@ -226,12 +215,10 @@ unsafe impl Scalar for () {
     #[doc(hidden)]
     type Local = bool;
     #[doc(hidden)]
-    #[cfg(feature = "atomic")]
     type Atomic = AtomicBool;
 
     #[doc(hidden)]
     const INIT_LOCAL: Self::Local = true;
-    #[cfg(feature = "atomic")]
     #[doc(hidden)]
     const INIT_ATOMIC: Self::Atomic = AtomicBool::new(true);
 
@@ -245,9 +232,8 @@ unsafe impl Scalar for () {
     }
 
     #[doc(hidden)]
-    #[cfg(feature = "atomic")]
     fn inc_atomic(this: &Self::Atomic) -> Option<Self> {
-        if this.compare_and_swap(true, false, Relaxed) {
+        if this.compare_exchange(true, false, Relaxed, Relaxed).is_ok() {
             Some(())
         } else {
             None
@@ -272,12 +258,10 @@ macro_rules! num {
             #[doc(hidden)]
             type Local = $local;
             #[doc(hidden)]
-            #[cfg(feature = "atomic")]
             type Atomic = $atomic;
             #[doc(hidden)]
             const INIT_LOCAL: Self::Local = $min;
             #[doc(hidden)]
-            #[cfg(feature = "atomic")]
             const INIT_ATOMIC: Self::Atomic = <$atomic>::new($min);
 
             #[doc(hidden)]
@@ -301,7 +285,6 @@ macro_rules! num {
             }
 
             #[doc(hidden)]
-            #[cfg(feature = "atomic")]
             fn inc_atomic(atomic: &Self::Atomic) -> Option<Self> {
                 let mut value = atomic.load(Relaxed);
 

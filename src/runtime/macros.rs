@@ -4,7 +4,6 @@
 /// For example,
 ///
 /// ```
-/// # #[cfg(feature = "atomic")]
 /// pui::make_global_id_alloc! {
 ///     pub type MyIdAlloc(MyId) = [u8; 3];
 /// }
@@ -16,18 +15,14 @@
 /// You can then use it like so,
 /// ```
 /// # use pui::runtime::Runtime;
-/// # #[cfg(feature = "atomic")]
 /// # pui::make_global_id_alloc! { type MyIdAlloc(MyId) = [u8; 3]; }
-/// # #[cfg(feature = "atomic")]
 /// let runtime_id_alloc /* : Runtime<MyIdAlloc> */ = MyIdAlloc::new();
 /// ```
 /// or if you want to plug in a custom [`PoolMut<_>`](crate::runtime::PoolMut),
 /// ```
 /// # use pui::runtime::Runtime;
-/// # #[cfg(feature = "atomic")]
 /// # pui::make_global_id_alloc! { type MyIdAlloc(MyId) = [u8; 3]; }
 /// # let pool = ();
-/// # #[cfg(feature = "atomic")]
 /// let runtime_id_alloc /* : Runtime<MyIdAlloc, _> */ = MyIdAlloc::with_pool(pool);
 /// ```
 #[macro_export]
@@ -78,13 +73,11 @@ macro_rules! make_global_id_alloc {
             }
 
             fn try_alloc(&mut self) -> Option<$id> {
-                $crate::if_atomic_feature! {
-                    #[allow(non_upper_case_globals)]
-                    static make_runtime_NEXT_ID: <$inner as $crate::macros::Scalar>::Atomic =
-                        <$inner as $crate::macros::Scalar>::INIT_ATOMIC;
+                #[allow(non_upper_case_globals)]
+                static make_runtime_NEXT_ID: <$inner as $crate::macros::Scalar>::Atomic =
+                    <$inner as $crate::macros::Scalar>::INIT_ATOMIC;
 
-                    <$inner as $crate::macros::Scalar>::inc_atomic(&make_runtime_NEXT_ID).map($id)
-                }
+                <$inner as $crate::macros::Scalar>::inc_atomic(&make_runtime_NEXT_ID).map($id)
             }
         }
     };

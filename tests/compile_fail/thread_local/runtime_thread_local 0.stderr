@@ -1,11 +1,27 @@
-error: no rules expected the token `=`
- --> $DIR/runtime_thread_local 0.rs:2:14
+error[E0277]: `*mut ()` cannot be sent between threads safely
+ --> $DIR/runtime_thread_local 0.rs:7:5
   |
-2 |     type Foo = u8;
-  |              ^ no rules expected this token in macro call
-
-error[E0433]: failed to resolve: use of undeclared type `Foo`
- --> $DIR/runtime_thread_local 0.rs:7:22
-  |
+6 |     fn assert_send_sync<T: Send + Sync>(_: T) {}
+  |                            ---- required by this bound in `assert_send_sync`
 7 |     assert_send_sync(Foo::new());
-  |                      ^^^ use of undeclared type `Foo`
+  |     ^^^^^^^^^^^^^^^^ `*mut ()` cannot be sent between threads safely
+  |
+  = help: within `Runtime<Foo>`, the trait `Send` is not implemented for `*mut ()`
+  = note: required because it appears within the type `ThreadLocal`
+  = note: required because it appears within the type `PhantomData<ThreadLocal>`
+  = note: required because it appears within the type `FooId`
+  = note: required because it appears within the type `Runtime<Foo>`
+
+error[E0277]: `*mut ()` cannot be shared between threads safely
+ --> $DIR/runtime_thread_local 0.rs:7:5
+  |
+6 |     fn assert_send_sync<T: Send + Sync>(_: T) {}
+  |                                   ---- required by this bound in `assert_send_sync`
+7 |     assert_send_sync(Foo::new());
+  |     ^^^^^^^^^^^^^^^^ `*mut ()` cannot be shared between threads safely
+  |
+  = help: within `Runtime<Foo>`, the trait `Sync` is not implemented for `*mut ()`
+  = note: required because it appears within the type `ThreadLocal`
+  = note: required because it appears within the type `PhantomData<ThreadLocal>`
+  = note: required because it appears within the type `FooId`
+  = note: required because it appears within the type `Runtime<Foo>`

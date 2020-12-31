@@ -34,11 +34,11 @@ jobs:
         target: thumbv7m-none-eabi
         override: true
     - name: Build no_std target
-      run: cargo build --no-default-features --features test --target thumbv7m-none-eabi --verbose
+      run: cargo build --no-default-features --features "test,nightly" --target thumbv7m-none-eabi --verbose
     - name: Build
-      run: cargo build --no-default-features --features test --verbose
+      run: cargo build --no-default-features --features "test,nightly" --verbose
     - name: Run tests
-      run: cargo test --no-default-features --features test --verbose
+      run: cargo test --no-default-features --features "test,nightly" --verbose
 
   build_nightly:
 

@@ -15,15 +15,15 @@ license = "MIT"
 [features]
 
 default = ['std']
-std = ['atomic']
+std = ['crossbeam-utils']
 alloc = []
 nightly = []
-atomic = []
 
 test = []
 
 [dependencies]
 cfg-if = '1'
+crossbeam-utils = { version = '0.8', optional = true }
 
 [dev-dependencies]
 trybuild = '1'
