@@ -3,6 +3,7 @@
 #![warn(rust_2018_idioms)]
 #![cfg_attr(doc, feature(doc_cfg))]
 #![cfg_attr(feature = "nightly", feature(cfg_target_has_atomic))]
+#![feature(negative_impls)]
 
 //! A set of process unique identifiers that can be used to
 //! identify values with minimal overhead within a single process
@@ -124,6 +125,7 @@ pub struct ThreadLocal(*mut ());
 ///         true for both handles
 /// * Two instances of `Identifier` must *never* return true for the same
 ///     handle if they can both exist on the same thread.
+/// * In particular, it is unsound to implement `Identifier` on references
 pub unsafe trait Identifier: Eq {
     /// A handle which can be used to mark other types
     type Handle: Handle;
