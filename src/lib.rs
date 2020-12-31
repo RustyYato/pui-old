@@ -142,7 +142,7 @@ pub unsafe trait Identifier: Eq {
 /// This is normally only possible through `Cell`, `RefCell`, global state, I/O, or unsafe code.
 pub unsafe trait Handle: Clone + Eq {}
 
-/// a type that has no validity (language) invariants or safety (library) invariants
+/// a type that has no safety (library) invariants
 pub trait Trivial: Copy {
     /// The canonical instance of `Self`
     const INSTANCE: Self;

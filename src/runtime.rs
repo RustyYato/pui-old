@@ -1,4 +1,4 @@
-//! A [`Runtime`] checked identifier
+//! A runtime checked identifier
 //!
 //! It uses an id allocator (usually a simple id_alloc) to generate new ids,
 //! then uses those ids to verifiy it's identity. You can either use the `Global`
@@ -98,21 +98,21 @@ make_global! {
     (
         /// A gobal allocator for [`Runtime`] ids (not to be confused with a memory allocator)
         ///
-        /// This can be used with [`Runtime`](super::[`Runtime`]::Runtime) to easily
-        /// create a new [`Runtime`](super::[`Runtime`]::Runtime) [`Identifier`](super::Identifier)
+        /// This can be used with [`Runtime`](super::runtime::Runtime) to easily
+        /// create a new [`Runtime`](super::runtime::Runtime) [`Identifier`](super::Identifier)
         #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
     )
     (
-        /// The Id used by [`Global`](crate::[`Runtime`]::Global)'s [[`IdAlloc`]](crate::[`Runtime`]::IdAlloc)
+        /// The Id used by [`Global`](crate::runtime::Global)'s [[`IdAlloc`]](crate::runtime::IdAlloc)
         /// implementation
         #[derive(PartialOrd, Ord, Hash)]
     )
 }
 
-/// A [`Runtime`] checked identifier
+/// A runtime checked identifier
 ///
-/// This uses a [`Runtime`] id to verify it's identity, this id is provided
-/// by the [[`IdAlloc`]](IdAlloc) trait, and ids may be reused via the [`PoolMut<I::Id>`](PoolMut)
+/// This uses a runtime id to verify it's identity, this id is provided
+/// by the [[`IdAlloc`]](IdAlloc) trait, and ids may be reused via [`PoolMut<_>`](PoolMut)
 pub struct Runtime<I: IdAlloc = Global, P: PoolMut<I::Id> = ()> {
     id: I::Id,
     pool: P,
