@@ -1,3 +1,11 @@
+# v 0.4.0
+
+* Removed `&mut I: Identifier`
+* Adjusted `Identifier` safety docs 
+  * `Identifier`s must *always* be unique on every thread they can be accessed on
+    *even after they are dropped*
+  * This allows them to be usd for safely used for unchecked indexing
+
 # v 0.3.0
 
 * Renamed `Counter` to `IdAlloc`
