@@ -91,8 +91,8 @@ pub struct ThreadLocal(*mut ());
 ///         // is the only `Owner` that could shared access the underlying value
 ///         // This is because:
 ///         //  * the `Owner` owns the `Identifier`
-///         //  * when we read/write, we bind the lifetime of `self` and `Handle` to the lifetime of
-///         //      the output reference
+///         //  * when we read/write, we bind the lifetime of `self` and `Handle`
+///         //      to the lifetime of the output reference
 ///         //  * we have shared access to `*self`
 ///         
 ///         unsafe { &*handle.value.get() }
@@ -105,8 +105,8 @@ pub struct ThreadLocal(*mut ());
 ///         // is the only `Owner` that could exclusive access the underlying value
 ///         // This is because:
 ///         //  * the `Owner` owns the `Identifier`
-///         //  * when we read/write, we bind the lifetime of `self` and `Handle` to the lifetime of
-///         //      the output reference
+///         //  * when we read/write, we bind the lifetime of `self` and `Handle`
+///         //      to the lifetime of the output reference
 ///         //  * we have exclusive access to `*self`
 ///         
 ///         unsafe { &mut *handle.value.get() }
@@ -116,12 +116,14 @@ pub struct ThreadLocal(*mut ());
 ///
 /// # Safety
 ///
-/// * `ident.owns(&handle)` must return true for any `handle` returned from `ident.handle()` regardless of when
-///     the handle was created.
-/// * If two handles compare equal, then `Identifier::owns` must act the same for both of them
-///     * i.e. it must return false for both handles, or it must return true for both handles
-/// * Two instances of `Identifier` must *never* return true for the same handle if they can both exist on the
-///     same thread at the same time.
+/// * `ident.owns(&handle)` must return true for any `handle` returned
+///     from `ident.handle()` regardless of when the handle was created.
+/// * If two handles compare equal, then `Identifier::owns` must act the
+///     same for both of them
+///     * i.e. it must return false for both handles, or it must return
+///         true for both handles
+/// * Two instances of `Identifier` must *never* return true for the same
+///     handle if they can both exist on the same thread.
 pub unsafe trait Identifier: Eq {
     /// A handle which can be used to mark other types
     type Handle: Handle;
@@ -137,25 +139,16 @@ pub unsafe trait Identifier: Eq {
 ///
 /// # Safety
 ///
-/// It is a safety bug for `Self` to be modified in such a way that its equality, as determined by the `Eq` trait,
-/// changes when compared using `PartialEq::Eq` or when cloned via `Clone::clone`.
-/// This is normally only possible through `Cell`, `RefCell`, global state, I/O, or unsafe code.
+/// It is a safety bug for `Self` to be modified in such a way that its equality,
+/// as determined by the `Eq` trait, changes when compared using `PartialEq::Eq`
+/// or when cloned via `Clone::clone`. This is normally only possible through
+/// `Cell`, `RefCell`, global state, I/O, or unsafe code.
 pub unsafe trait Handle: Clone + Eq {}
 
 /// a type that has no safety (library) invariants
 pub trait Trivial: Copy {
     /// The canonical instance of `Self`
     const INSTANCE: Self;
-}
-
-unsafe impl<I: Identifier + ?Sized> Identifier for &mut I {
-    type Handle = I::Handle;
-
-    #[inline]
-    fn handle(&self) -> Self::Handle { I::handle(self) }
-
-    #[inline]
-    fn owns(&self, handle: &Self::Handle) -> bool { I::owns(self, handle) }
 }
 
 #[cfg(any(feature = "std", feature = "alloc"))]
